@@ -4,7 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+
+#if NET45
 using Microsoft.Practices.ObjectBuilder2;
+#else
+using Unity;
+using ObjectBuilder2;
+#endif
 
 namespace Microsoft.Practices.Unity.TestSupport
 {

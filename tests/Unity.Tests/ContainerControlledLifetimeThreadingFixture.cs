@@ -2,10 +2,17 @@
 
 using System;
 using System.Threading;
-using Microsoft.Practices.ObjectBuilder2;
-using Microsoft.Practices.Unity.ObjectBuilder;
 using Microsoft.Practices.Unity.Tests.TestDoubles;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+#if NET45
+using Microsoft.Practices.ObjectBuilder2;
+using Microsoft.Practices.Unity.ObjectBuilder;
+#else
+using Unity;
+using Unity.ObjectBuilder;
+using ObjectBuilder2;
+#endif
 
 namespace Microsoft.Practices.Unity.Tests
 {

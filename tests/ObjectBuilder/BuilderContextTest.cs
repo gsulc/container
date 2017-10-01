@@ -11,6 +11,10 @@ using TestMethodAttribute = NUnit.Framework.TestAttribute;
 #else
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 #endif
+#if !NET45
+using ObjectBuilder2;
+using Unity;
+#endif
 
 namespace Microsoft.Practices.ObjectBuilder2.Tests
 {
@@ -29,9 +33,13 @@ namespace Microsoft.Practices.ObjectBuilder2.Tests
         [TestMethod]
         public void NewBuildSetsChildContextWhileBuilding()
         {
-            this.parentContext = new BuilderContext(GetNonThrowingStrategyChain(), null, null, null, null, null);
+#if NET45
+        this.parentContext = new BuilderContext(GetNonThrowingStrategyChain(), null, null, null, null, null);
+#else
+        this.parentContext = new BuilderContext(null, GetNonThrowingStrategyChain(), null, null, null, null, null);
+#endif
 
-            this.parentContext.NewBuildUp(null);
+        this.parentContext.NewBuildUp(null);
 
             Assert.AreSame(this.childContext, this.receivedContext);
         }
@@ -39,7 +47,11 @@ namespace Microsoft.Practices.ObjectBuilder2.Tests
         [TestMethod]
         public void NewBuildClearsTheChildContextOnSuccess()
         {
+#if NET45
             this.parentContext = new BuilderContext(GetNonThrowingStrategyChain(), null, null, null, null, null);
+#else
+            this.parentContext = new BuilderContext(null, GetNonThrowingStrategyChain(), null, null, null, null, null);
+#endif
 
             this.parentContext.NewBuildUp(null);
 
@@ -49,7 +61,11 @@ namespace Microsoft.Practices.ObjectBuilder2.Tests
         [TestMethod]
         public void NewBuildDoesNotClearTheChildContextOnFailure()
         {
-            this.parentContext = new BuilderContext(GetThrowingStrategyChain(), null, null, null, null, null);
+#if NET45
+            this.parentContext = new BuilderContext(GetNonThrowingStrategyChain(), null, null, null, null, null);
+#else
+            this.parentContext = new BuilderContext(null, GetNonThrowingStrategyChain(), null, null, null, null, null);
+#endif
 
             try
             {

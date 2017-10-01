@@ -2,8 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Practices.ObjectBuilder2;
-using Microsoft.Practices.Unity.ObjectBuilder;
 using Microsoft.Practices.Unity.Tests.TestObjects;
 using Microsoft.Practices.Unity.TestSupport;
 #if NETFX_CORE
@@ -15,6 +13,14 @@ using TestInitializeAttribute = NUnit.Framework.SetUpAttribute;
 using TestMethodAttribute = NUnit.Framework.TestAttribute;
 #else
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+#endif
+#if NET45
+using Microsoft.Practices.ObjectBuilder2;
+using Microsoft.Practices.Unity.ObjectBuilder;
+#else
+using Unity;
+using ObjectBuilder2;
+using Unity.ObjectBuilder;
 #endif
 
 namespace Microsoft.Practices.Unity.Tests

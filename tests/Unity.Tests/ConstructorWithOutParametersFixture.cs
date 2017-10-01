@@ -10,6 +10,9 @@ using TestMethodAttribute = NUnit.Framework.TestAttribute;
 #else
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 #endif
+#if !NET45
+using Unity;
+#endif
 
 namespace Microsoft.Practices.Unity.Tests
 {

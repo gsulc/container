@@ -2,7 +2,12 @@
 
 using System;
 using System.Collections.Generic;
+#if NET45
 using Microsoft.Practices.ObjectBuilder2;
+#else
+using Unity;
+using ObjectBuilder2;
+#endif
 
 namespace Microsoft.Practices.Unity.TestSupport
 {
@@ -77,6 +82,10 @@ namespace Microsoft.Practices.Unity.TestSupport
         public object CurrentOperation { get; set; }
 
         public IBuilderContext ChildContext { get; set; }
+
+#if !NET45
+        public IUnityContainer Container { get; set; }
+#endif
 
         public void AddResolverOverrides(IEnumerable<ResolverOverride> newOverrides)
         {

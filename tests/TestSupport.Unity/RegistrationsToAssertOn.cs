@@ -3,6 +3,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+#if !NET45
+using Unity;
+#endif
 
 namespace Microsoft.Practices.Unity.TestSupport
 {

@@ -11,6 +11,10 @@ using TestMethodAttribute = NUnit.Framework.TestAttribute;
 #else
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 #endif
+#if !NET45
+using ObjectBuilder2;
+using Unity;
+#endif
 
 namespace Microsoft.Practices.ObjectBuilder2.Tests
 {

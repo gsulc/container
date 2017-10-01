@@ -3,7 +3,11 @@
 using System;
 using System.Configuration;
 using System.IO;
+#if NET45
 using Microsoft.Practices.ObjectBuilder2;
+#else
+using ObjectBuilder2;
+#endif
 
 namespace Microsoft.Practices.Unity.TestSupport.Configuration
 {

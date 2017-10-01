@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved. See License.txt in the project root for license information.
 
-using Microsoft.Practices.Unity.ObjectBuilder;
 using Microsoft.Practices.Unity.Tests.TestDoubles;
 using Microsoft.Practices.Unity.TestSupport;
 #if NETFX_CORE
@@ -12,6 +11,12 @@ using TestInitializeAttribute = NUnit.Framework.SetUpAttribute;
 using TestMethodAttribute = NUnit.Framework.TestAttribute;
 #else
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+#endif
+#if NET45
+using Microsoft.Practices.Unity.ObjectBuilder;
+#else
+using Unity.ObjectBuilder;
+using Unity;
 #endif
 
 namespace Microsoft.Practices.Unity.Tests
@@ -97,6 +102,7 @@ namespace Microsoft.Practices.Unity.Tests
             Assert.IsTrue(spyPolicy.WasSpiedOn);
         }
 
+#if NET45
         [TestMethod]
         public void CanReinstallDefaultBehavior()
         {
@@ -108,6 +114,7 @@ namespace Microsoft.Practices.Unity.Tests
             object result = container.Resolve<object>();
             Assert.IsNotNull(result);
         }
+#endif
 
         [TestMethod]
         public void CanLookupExtensionByClassName()

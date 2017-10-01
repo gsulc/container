@@ -4,19 +4,28 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.Practices.ObjectBuilder2.Tests.TestDoubles;
-using Microsoft.Practices.ObjectBuilder2.Tests.TestObjects;
-using Microsoft.Practices.Unity;
 using Microsoft.Practices.Unity.TestSupport;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DependencyAttribute = Microsoft.Practices.ObjectBuilder2.Tests.TestDoubles.DependencyAttribute;
 using InjectionConstructorAttribute = Microsoft.Practices.ObjectBuilder2.Tests.TestDoubles.InjectionConstructorAttribute;
 using InjectionMethodAttribute = Microsoft.Practices.ObjectBuilder2.Tests.TestDoubles.InjectionMethodAttribute;
 
+#if NET45
+using Microsoft.Practices.ObjectBuilder2.Tests.TestObjects;
+using Microsoft.Practices.Unity;
+#else
+using ObjectBuilder2;
+using Unity;
+#endif
+
+
 namespace Microsoft.Practices.ObjectBuilder2.Tests
 {
     [TestClass]
     public class DynamicMethodCallFixture
     {
+        // TODO: Enable for new implementation
+#if NET45
         [TestMethod]
         public void CallsMethodsMarkedWithInjectionAttribute()
         {
@@ -205,7 +214,7 @@ namespace Microsoft.Practices.ObjectBuilder2.Tests
 
             return context;
         }
-
+#endif
         private IBuildPlanCreatorPolicy GetPlanCreator(IBuilderContext context)
         {
             return context.Policies.Get<IBuildPlanCreatorPolicy>(null);

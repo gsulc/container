@@ -2,7 +2,6 @@
 
 using System;
 using System.Reflection;
-using Microsoft.Practices.Unity.StaticFactory;
 using Microsoft.Practices.Unity.TestSupport;
 #if NETFX_CORE
 using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
@@ -13,6 +12,13 @@ using TestInitializeAttribute = NUnit.Framework.SetUpAttribute;
 using TestMethodAttribute = NUnit.Framework.TestAttribute;
 #else
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+#endif
+#if NET45
+using Microsoft.Practices.Unity.StaticFactory;
+#else
+using ObjectBuilder2;
+using Unity;
+using Unity.StaticFactory;
 #endif
 
 namespace Microsoft.Practices.Unity.Tests

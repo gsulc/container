@@ -13,6 +13,10 @@ using TestMethodAttribute = NUnit.Framework.TestAttribute;
 #else
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 #endif
+#if !NET45
+using ObjectBuilder2;
+using Unity;
+#endif
 
 namespace Microsoft.Practices.ObjectBuilder2.Tests
 {
@@ -72,7 +76,11 @@ namespace Microsoft.Practices.ObjectBuilder2.Tests
         public void Build()
         {
             var transientPolicies = new PolicyList(policies);
+#if NET45
             var context = new BuilderContext(strategies, null, policies, transientPolicies, new NamedTypeBuildKey<object>(), null);
+#else
+            var context = new BuilderContext(null, strategies, null, policies, transientPolicies, new NamedTypeBuildKey<object>(), null);
+#endif
             Result = strategies.ExecuteBuildUp(context);
         }
     }

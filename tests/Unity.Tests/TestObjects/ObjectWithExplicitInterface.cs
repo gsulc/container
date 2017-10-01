@@ -8,6 +8,9 @@ using NUnit.Framework;
 #else
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 #endif
+#if !NET45
+using Unity;
+#endif
 
 namespace Microsoft.Practices.Unity.Tests.TestObjects
 {

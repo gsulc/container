@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.Practices.Unity.StaticFactory;
 using Microsoft.Practices.Unity.Tests.TestObjects;
 using Microsoft.Practices.Unity.TestSupport;
 #if NETFX_CORE
@@ -13,6 +12,12 @@ using TestInitializeAttribute = NUnit.Framework.SetUpAttribute;
 using TestMethodAttribute = NUnit.Framework.TestAttribute;
 #else
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+#endif
+#if NET45
+using Microsoft.Practices.Unity.StaticFactory;
+#else
+using ObjectBuilder2;
+using Unity;
 #endif
 
 namespace Microsoft.Practices.Unity.Tests

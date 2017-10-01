@@ -1,6 +1,10 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved. See License.txt in the project root for license information.
 
+#if NET45
 using Microsoft.Practices.ObjectBuilder2;
+#else
+using ObjectBuilder2;
+#endif
 
 namespace Microsoft.Practices.Unity.Tests.TestDoubles
 {

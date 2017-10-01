@@ -10,12 +10,19 @@ using Microsoft.Practices.Unity.TestSupport;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DependencyAttribute = Microsoft.Practices.ObjectBuilder2.Tests.TestDoubles.DependencyAttribute;
 using InjectionConstructorAttribute = Microsoft.Practices.ObjectBuilder2.Tests.TestDoubles.InjectionConstructorAttribute;
+#if !NET45
+using ObjectBuilder2;
+using Unity;
+#endif
 
 namespace Microsoft.Practices.ObjectBuilder2.Tests
 {
     [TestClass]
     public class DynamicMethodPropertySetterFixture
     {
+
+        // TODO: Enable for new implementation
+#if NET45
         [TestMethod]
         public void CanInjectProperties()
         {
@@ -151,6 +158,7 @@ namespace Microsoft.Practices.ObjectBuilder2.Tests
 
             return context;
         }
+#endif
 
         private IBuildPlanCreatorPolicy GetPlanCreator(IBuilderContext context)
         {

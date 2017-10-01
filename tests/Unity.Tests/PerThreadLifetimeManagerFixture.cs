@@ -28,8 +28,14 @@ using TestMethodAttribute = NUnit.Framework.TestAttribute;
 #else
 using System.Linq;
 using System.Threading;
-using Microsoft.Practices.ObjectBuilder2;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+#endif
+
+#if NET45
+using Microsoft.Practices.ObjectBuilder2;
+#else
+using Unity;
+using ObjectBuilder2;
 #endif
 
 namespace Microsoft.Practices.Unity.Tests

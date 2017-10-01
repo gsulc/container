@@ -4,8 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Practices.ObjectBuilder2;
-using Microsoft.Practices.Unity.ObjectBuilder;
 using Microsoft.Practices.Unity.TestSupport;
 #if NETFX_CORE
 using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
@@ -16,6 +14,14 @@ using TestInitializeAttribute = NUnit.Framework.SetUpAttribute;
 using TestMethodAttribute = NUnit.Framework.TestAttribute;
 #else
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+#endif
+#if NET45
+using Microsoft.Practices.ObjectBuilder2;
+using Microsoft.Practices.Unity.ObjectBuilder;
+#else
+using Unity;
+using ObjectBuilder2;
+using Unity.ObjectBuilder;
 #endif
 
 namespace Microsoft.Practices.Unity.Tests
@@ -179,6 +185,10 @@ namespace Microsoft.Practices.Unity.Tests
                 get { throw new NotImplementedException(); }
                 set { throw new NotImplementedException(); }
             }
+
+#if !NET45
+            public IUnityContainer Container { get; set; }
+#endif
 
             public object NewBuildUp(NamedTypeBuildKey newBuildKey)
             {

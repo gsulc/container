@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Practices.ObjectBuilder2;
 #if NETFX_CORE
 using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
 #elif __IOS__
@@ -11,6 +10,13 @@ using TestInitializeAttribute = NUnit.Framework.SetUpAttribute;
 using TestMethodAttribute = NUnit.Framework.TestAttribute;
 #else
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+#endif
+
+#if NET45
+using Microsoft.Practices.ObjectBuilder2;
+#else
+using Unity;
+using ObjectBuilder2;
 #endif
 
 namespace Microsoft.Practices.Unity.Tests
@@ -195,6 +201,10 @@ namespace Microsoft.Practices.Unity.Tests
             {
                 get { throw new NotImplementedException(); }
             }
+
+#if !NET45
+            public IUnityContainer Container { get; set; }
+#endif
 
             public void AddResolverOverrides(System.Collections.Generic.IEnumerable<ResolverOverride> newOverrides)
             {
