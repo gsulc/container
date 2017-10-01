@@ -1,15 +1,14 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Microsoft.Practices.Unity.Properties;
-using Microsoft.Practices.Unity.Utility;
+using Unity.Properties;
+using Unity.Utility;
 
-namespace Microsoft.Practices.ObjectBuilder2
+namespace ObjectBuilder2
 {
     /// <summary>
     /// A <see cref="BuilderStrategy"/> that generates IL to call
@@ -18,11 +17,13 @@ namespace Microsoft.Practices.ObjectBuilder2
     /// </summary>
     public class DynamicMethodCallStrategy : BuilderStrategy
     {
-        private static readonly MethodInfo SetCurrentOperationToResolvingParameterMethod =
-            StaticReflection.GetMethodInfo(() => SetCurrentOperationToResolvingParameter(null, null, null));
+        private static readonly MethodInfo SetCurrentOperationToResolvingParameterMethod = 
+            typeof(DynamicMethodCallStrategy).GetTypeInfo().DeclaredMethods
+                .First(m => Equals(m.Name, nameof(DynamicMethodCallStrategy.SetCurrentOperationToResolvingParameter)));
 
         private static readonly MethodInfo SetCurrentOperationToInvokingMethodInfo =
-            StaticReflection.GetMethodInfo(() => SetCurrentOperationToInvokingMethod(null, null));
+            typeof(DynamicMethodCallStrategy).GetTypeInfo().DeclaredMethods
+                .First(m => Equals(m.Name, nameof(DynamicMethodCallStrategy.SetCurrentOperationToInvokingMethod)));
 
         /// <summary>
         /// Called during the chain of responsibility for a build operation. The
@@ -30,7 +31,6 @@ namespace Microsoft.Practices.ObjectBuilder2
         /// forward direction.
         /// </summary>
         /// <param name="context">Context of the build operation.</param>
-        [SuppressMessage("Microsoft.Design", "CA1062:ValidateArgumentsOfPublicMethods", Justification = "Validation done by Guard class")]
         public override void PreBuildUp(IBuilderContext context)
         {
             Guard.ArgumentNotNull(context, "context");
@@ -125,7 +125,6 @@ namespace Microsoft.Practices.ObjectBuilder2
         /// <summary>
         /// A helper method used by the generated IL to store the current operation in the build context.
         /// </summary>
-        [SuppressMessage("Microsoft.Design", "CA1062:ValidateArgumentsOfPublicMethods", Justification = "Validation done by Guard class.")]
         public static void SetCurrentOperationToResolvingParameter(string parameterName, string methodSignature, IBuilderContext context)
         {
             Guard.ArgumentNotNull(context, "context");
@@ -137,7 +136,6 @@ namespace Microsoft.Practices.ObjectBuilder2
         /// <summary>
         /// A helper method used by the generated IL to store the current operation in the build context.
         /// </summary>
-        [SuppressMessage("Microsoft.Design", "CA1062:ValidateArgumentsOfPublicMethods", Justification = "Validation done by Guard class.")]
         public static void SetCurrentOperationToInvokingMethod(string methodSignature, IBuilderContext context)
         {
             Guard.ArgumentNotNull(context, "context");

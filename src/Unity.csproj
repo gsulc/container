@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net45</TargetFramework>
+    <TargetFramework>netstandard1.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Unity</PackageId>
     <Description>Unity Core</Description>
@@ -17,13 +17,30 @@
     <PackageReleaseNotes>This package is distributed as .NET Standard 1.0 package.</PackageReleaseNotes>
     <Authors>Microsoft.Practices.Unity</Authors>
     <Company>Microsoft.Practices.Unity</Company>
-    <RootNamespace>Microsoft.Practices.Unity</RootNamespace>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="Exists('..\..\package.snk')">
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\..\package.snk</AssemblyOriginatorKeyFile>
+    <DelaySign>false</DelaySign>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="CommonServiceLocator" Version="1.3.0" />
+  <PropertyGroup>
+    <DebugType Condition="'$(TargetFramework)' != '' AND !$(TargetFramework.StartsWith('netcoreapp'))">Full</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' != '' AND '$(TargetFramework)' != 'net40' ">
+    <Compile Remove="net40\**" />
+    <EmbeddedResource Remove="net40\**" />
+    <None Remove="net40\**" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' != '' AND '$(TargetFramework)' == 'net40' ">
+    <Compile Remove="Injection\InjectionProperty.cs" />
+    <Compile Remove="Lifetime\SynchronizedLifetimeManager.cs" />
+    <Compile Remove="ObjectBuilder\Strategies\BuildPlan\DynamicMethod\Property\DynamicMethodPropertySetterStrategy.cs" />
+    <Compile Remove="ObjectBuilder\Strategies\BuildPlan\Property\PropertySelectorBase.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">

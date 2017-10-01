@@ -4,9 +4,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Practices.Unity.Utility;
+using Unity.Utility;
 
-namespace Microsoft.Practices.ObjectBuilder2
+namespace ObjectBuilder2
 {
     /// <summary>
     /// Represents a chain of responsibility for builder strategies.
@@ -68,33 +68,23 @@ namespace Microsoft.Practices.ObjectBuilder2
         /// <summary>
         /// Execute this strategy chain against the given context to build up.
         /// </summary>
-        /// <param name="context">Context for the build processes.</param>
+        /// <param name="builderContext">Context for the build processes.</param>
         /// <returns>The build up object</returns>
-        public object ExecuteBuildUp(IBuilderContext context)
+        public object ExecuteBuildUp(IBuilderContext builderContext)
         {
-            Microsoft.Practices.Unity.Utility.Guard.ArgumentNotNull(context, "context");
+            var context = builderContext ?? 
+                throw new ArgumentNullException(nameof(builderContext));
 
-            int i = 0;
             try
             {
-                for (; i < strategies.Count; ++i)
-                {
-                    if (context.BuildComplete)
-                    {
-                        break;
-                    }
-                    strategies[i].PreBuildUp(context);
-                }
+                var i = 0;
 
-                if (context.BuildComplete)
-                {
-                    --i; // skip shortcutting strategy's post
-                }
+                while (i < strategies.Count && !context.BuildComplete)
+                    strategies[i++].PreBuildUp(context);
 
-                for (--i; i >= 0; --i)
-                {
+                while (--i >= 0)
                     strategies[i].PostBuildUp(context);
-                }
+
                 return context.Existing;
             }
             catch (Exception)
@@ -108,29 +98,21 @@ namespace Microsoft.Practices.ObjectBuilder2
         /// Execute this strategy chain against the given context,
         /// calling the TearDown methods on the strategies.
         /// </summary>
-        /// <param name="context">Context for the teardown process.</param>
-        public void ExecuteTearDown(IBuilderContext context)
+        /// <param name="builderContext">Context for the teardown process.</param>
+        public void ExecuteTearDown(IBuilderContext builderContext)
         {
-            Microsoft.Practices.Unity.Utility.Guard.ArgumentNotNull(context, "context");
-
-            int i = 0;
+            var context = builderContext ??
+                          throw new ArgumentNullException(nameof(builderContext));
 
             try
             {
-                for (; i < strategies.Count; ++i)
-                {
-                    if (context.BuildComplete)
-                    {
-                        --i; // Skip current strategy's post
-                        break;
-                    }
-                    strategies[i].PreTearDown(context);
-                }
+                var i = 0;
 
-                for (--i; i >= 0; --i)
-                {
+                while (i < strategies.Count && !context.BuildComplete)
+                    strategies[i++].PreTearDown(context);
+
+                while (--i >= 0)
                     strategies[i].PostTearDown(context);
-                }
             }
             catch (Exception)
             {
@@ -139,6 +121,8 @@ namespace Microsoft.Practices.ObjectBuilder2
             }
         }
 
+
+        // TODO: Is it required
         #region IEnumerable<IBuilderStrategy> Members
 
         /// <summary>

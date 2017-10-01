@@ -3,9 +3,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.Practices.ObjectBuilder2
+namespace ObjectBuilder2
 {
     /// <summary>
     /// Represents a lifetime container.
@@ -15,7 +14,6 @@ namespace Microsoft.Practices.ObjectBuilder2
     /// IDisposable. When the container is disposed, any objects in the
     /// container which implement IDisposable are also disposed.
     /// </remarks>
-    [SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix", Justification = "See ILifetimeContainer")]
     public class LifetimeContainer : ILifetimeContainer
     {
         private readonly List<object> items = new List<object>();

@@ -2,14 +2,13 @@
 
 using System;
 
-namespace Microsoft.Practices.Unity
+namespace Unity
 {
     /// <summary>
     /// A Unity container extension that allows you to configure
     /// which constructors, properties, and methods get injected
     /// via an API rather than through attributes.
     /// </summary>
-    [Obsolete("Use the IUnityContainer.RegisterType method instead of this interface")]
     public class InjectedMembers : UnityContainerExtension
     {
         /// <summary>

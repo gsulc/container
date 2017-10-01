@@ -2,14 +2,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Practices.Unity.Properties;
-using Microsoft.Practices.Unity.Utility;
+using Unity.Properties;
+using Unity.Utility;
 
-namespace Microsoft.Practices.ObjectBuilder2
+namespace ObjectBuilder2
 {
     /// <summary>
     /// Base class that provides an implementation of <see cref="IConstructorSelectorPolicy"/>
@@ -25,7 +24,6 @@ namespace Microsoft.Practices.ObjectBuilder2
         /// <param name="resolverPolicyDestination">The <see cref='IPolicyList'/> to add any
         /// generated resolver objects into.</param>
         /// <returns>The chosen constructor.</returns>
-        [SuppressMessage("Microsoft.Design", "CA1062:ValidateArgumentsOfPublicMethods", Justification = "Validation done by Guard class")]
         public SelectedConstructor SelectConstructor(IBuilderContext context, IPolicyList resolverPolicyDestination)
         {
             Guard.ArgumentNotNull(context, "context");
@@ -124,7 +122,6 @@ namespace Microsoft.Practices.ObjectBuilder2
             /// <returns>
             /// Value Condition Less than zero is less than y. Zero equals y. Greater than zero is greater than y.
             /// </returns>
-            [SuppressMessage("Microsoft.Design", "CA1062:ValidateArgumentsOfPublicMethods", Justification = "Validation done by Guard class")]
             public int Compare(ConstructorInfo x, ConstructorInfo y)
             {
                 Guard.ArgumentNotNull(x, "x");

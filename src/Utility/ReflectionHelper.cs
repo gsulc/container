@@ -2,11 +2,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
-namespace Microsoft.Practices.Unity.Utility
+namespace Unity.Utility
 {
     /// <summary>
     /// A small helper class to encapsulate details of the
@@ -29,7 +28,6 @@ namespace Microsoft.Practices.Unity.Utility
         /// <summary>
         /// The <see cref="Type"/> object we're reflecting over.
         /// </summary>
-        [SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods", Justification = "This is the type part of the key.")]
         public Type Type
         {
             get { return t; }
@@ -82,8 +80,6 @@ namespace Microsoft.Practices.Unity.Utility
         /// </summary>
         /// <param name="method">The method to check.</param>
         /// <returns>True if any of the parameters are open generics. False if not.</returns>
-        [SuppressMessage("Microsoft.Design", "CA1062:ValidateArgumentsOfPublicMethods",
-            Justification = "Validation done via Guard class")]
         public static bool MethodHasOpenGenericParameters(MethodBase method)
         {
             Guard.ArgumentNotNull(method, "method");
@@ -171,7 +167,7 @@ namespace Microsoft.Practices.Unity.Utility
             }
             if (index != -1)
             {
-                result = Type.GenericTypeArguments[index];
+                result = Type.GetTypeInfo().GenericTypeArguments[index];
             }
             return result;
         }

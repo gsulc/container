@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 
-namespace Microsoft.Practices.ObjectBuilder2
+namespace ObjectBuilder2
 {
     /// <summary>
     /// A base class that holds the information shared by all operations
@@ -48,8 +48,6 @@ namespace Microsoft.Practices.ObjectBuilder2
         /// the base <see cref='ToString'/> method.
         /// </summary>
         /// <returns>The format string.</returns>
-        [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate",
-            Justification = "This could theoretically be expensive, and is easier to override for clients if it's a method.")]
         protected abstract string GetDescriptionFormat();
     }
 }

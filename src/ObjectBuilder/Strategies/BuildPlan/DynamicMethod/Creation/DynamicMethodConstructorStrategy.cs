@@ -2,16 +2,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Microsoft.Practices.Unity;
-using Microsoft.Practices.Unity.Properties;
-using Microsoft.Practices.Unity.Utility;
+using Unity;
+using Unity.Properties;
+using Unity.Utility;
 
-namespace Microsoft.Practices.ObjectBuilder2
+namespace ObjectBuilder2
 {
     /// <summary>
     /// A <see cref="BuilderStrategy"/> that emits IL to call constructors
@@ -19,37 +18,47 @@ namespace Microsoft.Practices.ObjectBuilder2
     /// </summary>
     public class DynamicMethodConstructorStrategy : BuilderStrategy
     {
-        private static readonly MethodInfo ThrowForNullExistingObjectMethod =
-          StaticReflection.GetMethodInfo(() => ThrowForNullExistingObject(null));
+        private static readonly MethodInfo ThrowForNullExistingObjectMethod = 
+            typeof(DynamicMethodConstructorStrategy).GetTypeInfo().DeclaredMethods
+                .First(m => Equals(m.Name, nameof(DynamicMethodConstructorStrategy.ThrowForNullExistingObject)));
 
         private static readonly MethodInfo ThrowForNullExistingObjectWithInvalidConstructorMethod =
-            StaticReflection.GetMethodInfo(() => ThrowForNullExistingObjectWithInvalidConstructor(null, null));
+            typeof(DynamicMethodConstructorStrategy).GetTypeInfo().DeclaredMethods
+                .First(m => Equals(m.Name, nameof(DynamicMethodConstructorStrategy.ThrowForNullExistingObjectWithInvalidConstructor)));
+
+        private static readonly MethodInfo ThrowForReferenceItselfConstructorMethod =
+            typeof(DynamicMethodConstructorStrategy).GetTypeInfo().DeclaredMethods
+                .First(m => Equals(m.Name, nameof(DynamicMethodConstructorStrategy.ThrowForReferenceItselfConstructor)));
 
         private static readonly MethodInfo ThrowForAttemptingToConstructInterfaceMethod =
-           StaticReflection.GetMethodInfo(() => ThrowForAttemptingToConstructInterface(null));
+            typeof(DynamicMethodConstructorStrategy).GetTypeInfo().DeclaredMethods
+                .First(m => Equals(m.Name, nameof(DynamicMethodConstructorStrategy.ThrowForAttemptingToConstructInterface)));
 
         private static readonly MethodInfo ThrowForAttemptingToConstructAbstractClassMethod =
-           StaticReflection.GetMethodInfo(() => ThrowForAttemptingToConstructAbstractClass(null));
+            typeof(DynamicMethodConstructorStrategy).GetTypeInfo().DeclaredMethods
+                .First(m => Equals(m.Name, nameof(DynamicMethodConstructorStrategy.ThrowForAttemptingToConstructAbstractClass)));
 
         private static readonly MethodInfo ThrowForAttemptingToConstructDelegateMethod =
-           StaticReflection.GetMethodInfo(() => ThrowForAttemptingToConstructDelegate(null));
+            typeof(DynamicMethodConstructorStrategy).GetTypeInfo().DeclaredMethods
+                .First(m => Equals(m.Name, nameof(DynamicMethodConstructorStrategy.ThrowForAttemptingToConstructDelegate)));
 
         private static readonly MethodInfo SetCurrentOperationToResolvingParameterMethod =
-            StaticReflection.GetMethodInfo(() => SetCurrentOperationToResolvingParameter(null, null, null));
+            typeof(DynamicMethodConstructorStrategy).GetTypeInfo().DeclaredMethods
+                .First(m => Equals(m.Name, nameof(DynamicMethodConstructorStrategy.SetCurrentOperationToResolvingParameter)));
 
         private static readonly MethodInfo SetCurrentOperationToInvokingConstructorMethod =
-            StaticReflection.GetMethodInfo(() => SetCurrentOperationToInvokingConstructor(null, null));
+            typeof(DynamicMethodConstructorStrategy).GetTypeInfo().DeclaredMethods
+                .First(m => Equals(m.Name, nameof(DynamicMethodConstructorStrategy.SetCurrentOperationToInvokingConstructor)));
 
         private static readonly MethodInfo SetPerBuildSingletonMethod =
-            StaticReflection.GetMethodInfo(() => SetPerBuildSingleton(null));
+            typeof(DynamicMethodConstructorStrategy).GetTypeInfo().DeclaredMethods
+                .First(m => Equals(m.Name, nameof(DynamicMethodConstructorStrategy.SetPerBuildSingleton)));
 
         /// <summary>
         /// Called during the chain of responsibility for a build operation.
         /// </summary>
         /// <remarks>Existing object is an instance of <see cref="DynamicBuildPlanGenerationContext"/>.</remarks>
         /// <param name="context">The context for the operation.</param>
-        // FxCop suppression: Validation is done by Guard class
-        [SuppressMessage("Microsoft.Design", "CA1062:ValidateArgumentsOfPublicMethods", Justification = "Validation is done by Guard class")]
         public override void PreBuildUp(IBuilderContext context)
         {
             Guard.ArgumentNotNull(context, "context");
@@ -89,6 +98,8 @@ namespace Microsoft.Practices.ObjectBuilder2
                 return CreateThrowWithContext(buildContext, ThrowForAttemptingToConstructDelegateMethod);
             }
 
+            var ss = ((System.Collections.IEnumerable)context.Policies);
+
             IPolicyList resolverPolicyDestination;
             IConstructorSelectorPolicy selector =
                 context.Policies.Get<IConstructorSelectorPolicy>(context.BuildKey, out resolverPolicyDestination);
@@ -100,27 +111,33 @@ namespace Microsoft.Practices.ObjectBuilder2
                 return CreateThrowWithContext(buildContext, ThrowForNullExistingObjectMethod);
             }
 
-            string signature = DynamicMethodConstructorStrategy.CreateSignatureString(selectedConstructor.Constructor);
+            string signature = CreateSignatureString(selectedConstructor.Constructor);
 
-            if (IsInvalidConstructor(selectedConstructor))
+            if (selectedConstructor.Constructor.GetParameters().Any(pi => pi.ParameterType.IsByRef))
             {
                 return CreateThrowForNullExistingObjectWithInvalidConstructor(buildContext, signature);
             }
 
-            // psuedo-code:
-            // throw if attempting interface
-            // if (context.Existing == null) {
-            //   collect parameters
-            //   set operation to invoking constructor
-            //   context.Existing = new {objectType}({constructorparameter}...)
-            //   clear current operation
-            // }
-            return Expression.Block(this.CreateNewBuildupSequence(buildContext, selectedConstructor, signature));
+            if (IsInvalidConstructor(targetTypeInfo, context, selectedConstructor))
+            {
+                return CreateThrowForReferenceItselfMethodConstructor(buildContext, signature);
+            }
+            
+
+            return Expression.Block(CreateNewBuildupSequence(buildContext, selectedConstructor, signature));
         }
 
-        private static bool IsInvalidConstructor(SelectedConstructor selectedConstructor)
+        private static bool IsInvalidConstructor(TypeInfo target, IBuilderContext context, SelectedConstructor selectedConstructor)
         {
-            return selectedConstructor.Constructor.GetParameters().Any(pi => pi.ParameterType.IsByRef);
+            if (selectedConstructor.Constructor.GetParameters().Any(p => p.ParameterType.GetTypeInfo() == target))
+            {
+                IPolicyList containingPolicyList;
+                var policy = context.Policies.Get<ILifetimePolicy>(context.BuildKey, out containingPolicyList);
+                if (null == policy?.GetValue())
+                    return true;
+            }
+
+            return false;
         }
 
         private static Expression CreateThrowWithContext(DynamicBuildPlanGenerationContext buildContext, MethodInfo throwMethod)
@@ -139,6 +156,16 @@ namespace Microsoft.Practices.ObjectBuilder2
                                 buildContext.ContextParameter,
                                 Expression.Constant(signature, typeof(string)));
         }
+
+        private static Expression CreateThrowForReferenceItselfMethodConstructor(DynamicBuildPlanGenerationContext buildContext, string signature)
+        {
+            return Expression.Call(
+                                null,
+                                ThrowForReferenceItselfConstructorMethod,
+                                buildContext.ContextParameter,
+                                Expression.Constant(signature, typeof(string)));
+        }
+      
 
         private IEnumerable<Expression> CreateNewBuildupSequence(DynamicBuildPlanGenerationContext buildContext, SelectedConstructor selectedConstructor, string signature)
         {
@@ -183,16 +210,15 @@ namespace Microsoft.Practices.ObjectBuilder2
         /// if the current object is such.
         /// </summary>
         /// <param name="context">Current build context.</param>
-        [SuppressMessage("Microsoft.Design", "CA1062:ValidateArgumentsOfPublicMethods", Justification = "Validation done by Guard class.")]
         public static void SetPerBuildSingleton(IBuilderContext context)
         {
             Guard.ArgumentNotNull(context, "context");
 
-            var lifetime = context.Policies.Get<ILifetimePolicy>(context.BuildKey);
+            var lifetime = context.Policies.Get<ILifetimePolicy>(context.OriginalBuildKey);
             if (lifetime is PerResolveLifetimeManager)
             {
                 var perBuildLifetime = new PerResolveLifetimeManager(context.Existing);
-                context.Policies.Set<ILifetimePolicy>(perBuildLifetime, context.BuildKey);
+                context.Policies.Set<ILifetimePolicy>(perBuildLifetime, context.OriginalBuildKey);
             }
         }
 
@@ -202,8 +228,6 @@ namespace Microsoft.Practices.ObjectBuilder2
         /// </summary>
         /// <param name="constructor"></param>
         /// <returns></returns>
-        [SuppressMessage("Microsoft.Design", "CA1062:ValidateArgumentsOfPublicMethods", Justification = "Validation done by Guard class")]
-        [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters", Justification = "Strategy should only ever expect constructor method")]
         public static string CreateSignatureString(ConstructorInfo constructor)
         {
             Guard.ArgumentNotNull(constructor, "constructor");
@@ -246,7 +270,6 @@ namespace Microsoft.Practices.ObjectBuilder2
         /// <summary>
         /// A helper method used by the generated IL to store the current operation in the build context.
         /// </summary>
-        [SuppressMessage("Microsoft.Design", "CA1062:ValidateArgumentsOfPublicMethods", Justification = "Validation done by Guard class.")]
         public static void SetCurrentOperationToResolvingParameter(string parameterName, string constructorSignature, IBuilderContext context)
         {
             Guard.ArgumentNotNull(context, "context");
@@ -258,7 +281,6 @@ namespace Microsoft.Practices.ObjectBuilder2
         /// <summary>
         /// A helper method used by the generated IL to store the current operation in the build context.
         /// </summary>
-        [SuppressMessage("Microsoft.Design", "CA1062:ValidateArgumentsOfPublicMethods", Justification = "Validation done by Guard class.")]
         public static void SetCurrentOperationToInvokingConstructor(string constructorSignature, IBuilderContext context)
         {
             Guard.ArgumentNotNull(context, "context");
@@ -267,6 +289,9 @@ namespace Microsoft.Practices.ObjectBuilder2
                 context.BuildKey.Type, constructorSignature);
         }
 
+
+        #region Error conditions
+
         /// <summary>
         /// A helper method used by the generated IL to throw an exception if
         /// no existing object is present, but the user is attempting to build
@@ -274,7 +299,6 @@ namespace Microsoft.Practices.ObjectBuilder2
         /// </summary>
         /// <param name="context">The <see cref="IBuilderContext"/> currently being
         /// used for the build of this object.</param>
-        [SuppressMessage("Microsoft.Design", "CA1062:ValidateArgumentsOfPublicMethods", Justification = "Validation done by Guard class.")]
         public static void ThrowForAttemptingToConstructInterface(IBuilderContext context)
         {
             Guard.ArgumentNotNull(context, "context");
@@ -292,7 +316,6 @@ namespace Microsoft.Practices.ObjectBuilder2
         /// </summary>
         /// <param name="context">The <see cref="IBuilderContext"/> currently being
         /// used for the build of this object.</param>
-        [SuppressMessage("Microsoft.Design", "CA1062:ValidateArgumentsOfPublicMethods", Justification = "Validation done by Guard class.")]
         public static void ThrowForAttemptingToConstructAbstractClass(IBuilderContext context)
         {
             Guard.ArgumentNotNull(context, "context");
@@ -310,7 +333,6 @@ namespace Microsoft.Practices.ObjectBuilder2
         /// </summary>
         /// <param name="context">The <see cref="IBuilderContext"/> currently being
         /// used for the build of this object.</param>
-        [SuppressMessage("Microsoft.Design", "CA1062:ValidateArgumentsOfPublicMethods", Justification = "Validation done by Guard class.")]
         public static void ThrowForAttemptingToConstructDelegate(IBuilderContext context)
         {
             Guard.ArgumentNotNull(context, "context");
@@ -327,8 +349,6 @@ namespace Microsoft.Practices.ObjectBuilder2
         /// </summary>
         /// <param name="context">The <see cref="IBuilderContext"/> currently being
         /// used for the build of this object.</param>
-        [SuppressMessage("Microsoft.Design", "CA1062:ValidateArgumentsOfPublicMethods",
-            Justification = "Validation done by Guard class")]
         public static void ThrowForNullExistingObject(IBuilderContext context)
         {
             Guard.ArgumentNotNull(context, "context");
@@ -345,8 +365,6 @@ namespace Microsoft.Practices.ObjectBuilder2
         /// <param name="context">The <see cref="IBuilderContext"/> currently being
         /// used for the build of this object.</param>
         /// <param name="signature">The signature of the invalid constructor.</param>
-        [SuppressMessage("Microsoft.Design", "CA1062:ValidateArgumentsOfPublicMethods",
-            Justification = "Validation done by Guard class")]
         public static void ThrowForNullExistingObjectWithInvalidConstructor(IBuilderContext context, string signature)
         {
             Guard.ArgumentNotNull(context, "context");
@@ -356,5 +374,24 @@ namespace Microsoft.Practices.ObjectBuilder2
                               context.BuildKey.Type.GetTypeInfo().Name,
                               signature));
         }
+
+        /// <summary>
+        /// A helper method used by the generated IL to throw an exception if
+        /// a dependency cannot be resolved because of an invalid constructor.
+        /// </summary>
+        /// <param name="context">The <see cref="IBuilderContext"/> currently being
+        /// used for the build of this object.</param>
+        /// <param name="signature">The signature of the invalid constructor.</param>
+        public static void ThrowForReferenceItselfConstructor(IBuilderContext context, string signature)
+        {
+            Guard.ArgumentNotNull(context, "context");
+            throw new InvalidOperationException(
+                string.Format(CultureInfo.CurrentCulture,
+                              Resources.SelectedConstructorHasRefItself,
+                              context.BuildKey.Type.GetTypeInfo().Name,
+                              signature));
+        }
+
+        #endregion
     }
 }

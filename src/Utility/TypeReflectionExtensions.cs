@@ -1,13 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved. See License.txt in the project root for license information.
 
 using System;
+using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Microsoft.Practices.Unity.Utility
+namespace Unity.Utility
 {
     /// <summary>
     /// Provides extension methods to the <see cref="Type"/> class due to the introduction 
@@ -21,7 +19,7 @@ namespace Microsoft.Practices.Unity.Utility
         /// <param name="type">The type to inspect</param>
         /// <param name="constructorParameters">The constructor parameter types.</param>
         /// <returns>The constructor that matches the specified parameter types.</returns>
-        public static ConstructorInfo GetConstructor(this Type type, params Type[] constructorParameters)
+        public static ConstructorInfo GetConstructorInfo(this Type type, params Type[] constructorParameters)
         {
             return type.GetTypeInfo().DeclaredConstructors
                 .Single(c => !c.IsStatic && ParametersMatch(c.GetParameters(), constructorParameters));
@@ -91,8 +89,8 @@ namespace Microsoft.Practices.Unity.Utility
         /// <returns></returns>
         public static bool ParametersMatch(ParameterInfo[] parameters, System.Type[] closedConstructorParameterTypes)
         {
-            Microsoft.Practices.Unity.Utility.Guard.ArgumentNotNull(parameters, "parameters");
-            Microsoft.Practices.Unity.Utility.Guard.ArgumentNotNull(closedConstructorParameterTypes, "closedConstructorParameterTypes");
+            Unity.Utility.Guard.ArgumentNotNull(parameters, "parameters");
+            Unity.Utility.Guard.ArgumentNotNull(closedConstructorParameterTypes, "closedConstructorParameterTypes");
 
             if (parameters.Length != closedConstructorParameterTypes.Length)
             {

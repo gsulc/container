@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved. See License.txt in the project root for license information.
 
-namespace Microsoft.Practices.Unity
+using ObjectBuilder2;
+
+namespace Unity
 {
     /// <summary>
     /// An <see cref="LifetimeManager"/> implementation that does nothing,
@@ -8,6 +10,10 @@ namespace Microsoft.Practices.Unity
     /// </summary>
     public class TransientLifetimeManager : LifetimeManager
     {
+        private static TransientLifetimeManager _instance = new TransientLifetimeManager();
+
+        internal override bool InUse { get => false; set { } }
+
         /// <summary>
         /// Retrieve a value from the backing store associated with this Lifetime policy.
         /// </summary>
@@ -31,5 +37,7 @@ namespace Microsoft.Practices.Unity
         public override void RemoveValue()
         {
         }
+
+        public static TransientLifetimeManager Instance => _instance;
     }
 }

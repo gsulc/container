@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved. See License.txt in the project root for license information.
 
-using Microsoft.Practices.ObjectBuilder2;
+using ObjectBuilder2;
 
-namespace Microsoft.Practices.Unity.ObjectBuilder
+namespace Unity.ObjectBuilder
 {
     /// <summary>
     /// A <see cref="IDependencyResolverPolicy"/> implementation that returns
@@ -10,7 +10,7 @@ namespace Microsoft.Practices.Unity.ObjectBuilder
     /// </summary>
     public class LiteralValueDependencyResolverPolicy : IDependencyResolverPolicy
     {
-        private object dependencyValue;
+        private readonly object dependencyValue;
 
         /// <summary>
         /// Create a new instance of <see cref="LiteralValueDependencyResolverPolicy"/>

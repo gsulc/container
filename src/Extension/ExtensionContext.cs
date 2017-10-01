@@ -1,17 +1,16 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Practices.ObjectBuilder2;
-using Microsoft.Practices.Unity.ObjectBuilder;
+using ObjectBuilder2;
+using Unity.ObjectBuilder;
 
-namespace Microsoft.Practices.Unity
+namespace Unity
 {
     /// <summary>
     /// The <see cref="ExtensionContext"/> class provides the means for extension objects
     /// to manipulate the internal state of the <see cref="UnityContainer"/>.
     /// </summary>
-    public abstract class ExtensionContext
+    public abstract class ExtensionContext : IContainerContext
     {
         /// <summary>
         /// The container that this context is associated with.
@@ -55,7 +54,6 @@ namespace Microsoft.Practices.Unity
         /// </para></remarks>
         /// <param name="t"><see cref="Type"/> to register.</param>
         /// <param name="name">Name associated with that type.</param>
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "t", Justification = "Parameter name is meaningful enough in context")]
         public abstract void RegisterNamedType(Type t, string name);
 
         /// <summary>

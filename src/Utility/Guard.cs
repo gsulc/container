@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
-using Microsoft.Practices.Unity.Properties;
+using System.Runtime.CompilerServices;
+using Unity.Properties;
 
-namespace Microsoft.Practices.Unity.Utility
+namespace Unity.Utility
 {
     /// <summary>
     /// A static helper class that includes various parameter checking routines.
@@ -20,7 +20,7 @@ namespace Microsoft.Practices.Unity.Utility
         /// <param name="argumentValue">Argument value to test.</param>
         /// <param name="argumentName">Name of the argument being tested.</param>
         public static void ArgumentNotNull(object argumentValue,
-                                           string argumentName)
+                                           [CallerMemberName] string argumentName = null)
         {
             if (argumentValue == null)
             {
@@ -36,7 +36,7 @@ namespace Microsoft.Practices.Unity.Utility
         /// <param name="argumentValue">Argument value to check.</param>
         /// <param name="argumentName">Name of argument being checked.</param>
         public static void ArgumentNotNullOrEmpty(string argumentValue,
-                                                  string argumentName)
+                                                  [CallerMemberName] string argumentName = null)
         {
             if (argumentValue == null)
             {
@@ -56,17 +56,14 @@ namespace Microsoft.Practices.Unity.Utility
         /// <param name="assignmentTargetType">The argument type that will be assigned to.</param>
         /// <param name="assignmentValueType">The type of the value being assigned.</param>
         /// <param name="argumentName">Argument name.</param>
-        public static void TypeIsAssignable(Type assignmentTargetType, Type assignmentValueType, string argumentName)
+        public static void TypeIsAssignable(Type assignmentTargetType, Type assignmentValueType, 
+                                            [CallerMemberName] string argumentName = null)
         {
             if (assignmentTargetType == null)
-            {
-                throw new ArgumentNullException("assignmentTargetType");
-            }
+                throw new ArgumentNullException(nameof(assignmentTargetType));
 
             if (assignmentValueType == null)
-            {
-                throw new ArgumentNullException("assignmentValueType");
-            }
+                throw new ArgumentNullException(nameof(assignmentValueType));
 
             if (!assignmentTargetType.GetTypeInfo().IsAssignableFrom(assignmentValueType.GetTypeInfo()))
             {
@@ -81,23 +78,20 @@ namespace Microsoft.Practices.Unity.Utility
 
         /// <summary>
         /// Verifies that an argument instance is assignable from the provided type (meaning
-        /// interfaces are implemented, or classes exist in the base class hierarchy, or instance can be 
+        /// interfaces are implemented, or classes exist in the base class hierarchy, or instance can be
         /// assigned through a runtime wrapper, as is the case for COM Objects).
         /// </summary>
         /// <param name="assignmentTargetType">The argument type that will be assigned to.</param>
         /// <param name="assignmentInstance">The instance that will be assigned.</param>
         /// <param name="argumentName">Argument name.</param>
-        public static void InstanceIsAssignable(Type assignmentTargetType, object assignmentInstance, string argumentName)
+        public static void InstanceIsAssignable(Type assignmentTargetType, object assignmentInstance, 
+                                                [CallerMemberName] string argumentName = null)
         {
             if (assignmentTargetType == null)
-            {
-                throw new ArgumentNullException("assignmentTargetType");
-            }
+                throw new ArgumentNullException(nameof(assignmentTargetType));
 
             if (assignmentInstance == null)
-            {
-                throw new ArgumentNullException("assignmentInstance");
-            }
+                throw new ArgumentNullException(nameof(assignmentInstance));
 
             if (!assignmentTargetType.GetTypeInfo().IsAssignableFrom(assignmentInstance.GetType().GetTypeInfo()))
             {
@@ -111,8 +105,6 @@ namespace Microsoft.Practices.Unity.Utility
             }
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes",
-            Justification = "Need to use exception as flow control here, no other choice")]
         private static string GetTypeName(object assignmentInstance)
         {
             string assignmentInstanceType;

@@ -2,10 +2,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Practices.ObjectBuilder2;
+using ObjectBuilder2;
 
-namespace Microsoft.Practices.Unity
+namespace Unity
 {
     /// <summary>
     /// Base type for objects that are used to configure parameters for
@@ -29,8 +28,6 @@ namespace Microsoft.Practices.Unity
         /// <param name="t">Type to check.</param>
         /// <returns>True if this parameter value is compatible with type <paramref name="t"/>,
         /// false if not.</returns>
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "t",
-            Justification = "Parameter is meaningful enough in context")]
         public abstract bool MatchesType(Type t);
 
         /// <summary>
@@ -51,7 +48,7 @@ namespace Microsoft.Practices.Unity
         /// <param name="values">The values to build the sequence from.</param>
         /// <returns>The resulting converted sequence.</returns>
         public static IEnumerable<InjectionParameterValue> ToParameters(params object[] values)
-        {
+        {  
             foreach (object value in values)
             {
                 yield return ToParameter(value);

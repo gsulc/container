@@ -1,17 +1,18 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
-using Microsoft.Practices.Unity.Properties;
+using Unity.Properties;
 
-namespace Microsoft.Practices.ObjectBuilder2
+namespace ObjectBuilder2
 {
     /// <summary>
     /// A custom collection wrapper over <see cref="IBuilderPolicy"/> objects.
     /// </summary>
-    public class PolicyList : IPolicyList
+    public class PolicyList : IPolicyList, IEnumerable
     {
         private readonly IPolicyList innerPolicyList;
         private readonly object lockObject = new object();
@@ -249,7 +250,22 @@ namespace Microsoft.Practices.ObjectBuilder2
                     CultureInfo.CurrentCulture,
                     Resources.CannotExtractTypeFromBuildKey,
                     buildKey),
-                "buildKey");
+                nameof(buildKey));
+        }
+
+        private IEnumerable<object> Policies()
+        {
+            foreach (var policy in policies)
+            {
+                yield return policy;
+            }
+
+            yield break;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return 0 == Count ? ((IEnumerable)innerPolicyList).GetEnumerator() : Policies().GetEnumerator();
         }
 
         private class NullPolicyList : IPolicyList
@@ -298,10 +314,8 @@ namespace Microsoft.Practices.ObjectBuilder2
 
         private struct PolicyKey
         {
-#pragma warning disable 219
             public readonly object BuildKey;
             public readonly Type PolicyType;
-#pragma warning restore 219
 
             public PolicyKey(Type policyType,
                              object buildKey)
@@ -312,7 +326,7 @@ namespace Microsoft.Practices.ObjectBuilder2
 
             public override bool Equals(object obj)
             {
-                if (obj != null && obj.GetType() == typeof(PolicyKey))
+                if (obj != null && obj is PolicyKey)
                 {
                     return this == (PolicyKey)obj;
                 }

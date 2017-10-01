@@ -2,9 +2,9 @@
 
 using System;
 using System.Reflection;
-using Microsoft.Practices.Unity.Utility;
+using Unity.Utility;
 
-namespace Microsoft.Practices.Unity
+namespace Unity
 {
     /// <summary>
     /// A base class for implementing <see cref="InjectionParameterValue"/> classes
@@ -47,8 +47,6 @@ namespace Microsoft.Practices.Unity
         /// <param name="t">Type to check.</param>
         /// <returns>True if this parameter value is compatible with type <paramref name="t"/>,
         /// false if not.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:ValidateArgumentsOfPublicMethods",
-            Justification = "Validation done by Guard class.")]
         public override bool MatchesType(Type t)
         {
             Guard.ArgumentNotNull(t, "t");

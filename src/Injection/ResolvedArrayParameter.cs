@@ -3,12 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Microsoft.Practices.ObjectBuilder2;
-using Microsoft.Practices.Unity.ObjectBuilder;
-using Microsoft.Practices.Unity.Properties;
-using Microsoft.Practices.Unity.Utility;
+using ObjectBuilder2;
+using Unity.Properties;
+using Unity.Utility;
 
-namespace Microsoft.Practices.Unity
+namespace Unity
 {
     /// <summary>
     /// A class that stores a type, and generates a 
@@ -69,8 +68,6 @@ namespace Microsoft.Practices.Unity
         /// <param name="typeToBuild">Type that contains the member that needs this parameter. Used
         /// to resolve open generic parameters.</param>
         /// <returns>The <see cref="IDependencyResolverPolicy"/>.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:ValidateArgumentsOfPublicMethods",
-            Justification = "Validation done via Guard class")]
         public override IDependencyResolverPolicy GetResolverPolicy(Type typeToBuild)
         {
             Guard.ArgumentNotNull(typeToBuild, "typeToBuild");

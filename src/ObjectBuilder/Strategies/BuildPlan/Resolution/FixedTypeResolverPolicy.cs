@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Practices.Unity.Utility;
+using Unity.Utility;
 
-namespace Microsoft.Practices.ObjectBuilder2
+namespace ObjectBuilder2
 {
     /// <summary>
     /// An implementation of <see cref="IDependencyResolverPolicy"/> that
@@ -32,8 +31,6 @@ namespace Microsoft.Practices.ObjectBuilder2
         /// <param name="context">Current build context.</param>
         /// <returns>The value for the dependency.</returns>
         // FxCop suppression: Validation is done via Guard class
-        [SuppressMessage("Microsoft.Design", "CA1062:ValidateArgumentsOfPublicMethods",
-                         Justification = "Validation is done via Guard class")]
         public object Resolve(IBuilderContext context)
         {
             Guard.ArgumentNotNull(context, "context");

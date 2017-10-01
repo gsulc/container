@@ -2,11 +2,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Practices.Unity;
-using Microsoft.Practices.Unity.Utility;
+using Unity;
+using Unity.Utility;
 
-namespace Microsoft.Practices.ObjectBuilder2
+namespace ObjectBuilder2
 {
     /// <summary>
     /// Represents the context in which a build-up or tear-down operation runs.
@@ -23,26 +22,19 @@ namespace Microsoft.Practices.ObjectBuilder2
         private bool ownsOverrides;
 
         /// <summary>
-        /// Initialize a new instance of the <see cref="BuilderContext"/> class.
-        /// </summary>
-        protected BuilderContext() { }
-
-        /// <summary>
         /// Initialize a new instance of the <see cref="BuilderContext"/> class with a <see cref="IStrategyChain"/>, 
         /// <see cref="ILifetimeContainer"/>, <see cref="IPolicyList"/> and the 
         /// build key used to start this build operation. 
         /// </summary>
+        /// <param name="container">The instance of <see cref="UnityContainer"/> it is associated with</param>
         /// <param name="chain">The <see cref="IStrategyChain"/> to use for this context.</param>
         /// <param name="lifetime">The <see cref="ILifetimeContainer"/> to use for this context.</param>
         /// <param name="policies">The <see cref="IPolicyList"/> to use for this context.</param>
         /// <param name="originalBuildKey">Build key to start building.</param>
         /// <param name="existing">The existing object to build up.</param>
-        public BuilderContext(IStrategyChain chain,
-            ILifetimeContainer lifetime,
-            IPolicyList policies,
-            NamedTypeBuildKey originalBuildKey,
-            object existing)
+        public BuilderContext(IUnityContainer container, IStrategyChain chain, ILifetimeContainer lifetime, IPolicyList policies, NamedTypeBuildKey originalBuildKey, object existing)
         {
+            this.Container = container;
             this.chain = chain;
             this.lifetime = lifetime;
             this.originalBuildKey = originalBuildKey;
@@ -66,8 +58,9 @@ namespace Microsoft.Practices.ObjectBuilder2
         /// combined.</param>
         /// <param name="buildKey">Build key for this context.</param>
         /// <param name="existing">Existing object to build up.</param>
-        public BuilderContext(IStrategyChain chain, ILifetimeContainer lifetime, IPolicyList persistentPolicies, IPolicyList transientPolicies, NamedTypeBuildKey buildKey, object existing)
+        public BuilderContext(IUnityContainer container, IStrategyChain chain, ILifetimeContainer lifetime, IPolicyList persistentPolicies, IPolicyList transientPolicies, NamedTypeBuildKey buildKey, object existing)
         {
+            this.Container = container;
             this.chain = chain;
             this.lifetime = lifetime;
             this.persistentPolicies = persistentPolicies;
@@ -91,8 +84,9 @@ namespace Microsoft.Practices.ObjectBuilder2
         /// combined.</param>
         /// <param name="buildKey">Build key for this context.</param>
         /// <param name="resolverOverrides">The resolver overrides.</param>
-        protected BuilderContext(IStrategyChain chain, ILifetimeContainer lifetime, IPolicyList persistentPolicies, IPolicyList transientPolicies, NamedTypeBuildKey buildKey, CompositeResolverOverride resolverOverrides)
+        protected BuilderContext(IUnityContainer container, IStrategyChain chain, ILifetimeContainer lifetime, IPolicyList persistentPolicies, IPolicyList transientPolicies, NamedTypeBuildKey buildKey, CompositeResolverOverride resolverOverrides = null)
         {
+            this.Container = container;
             this.chain = chain;
             this.lifetime = lifetime;
             this.persistentPolicies = persistentPolicies;
@@ -100,9 +94,11 @@ namespace Microsoft.Practices.ObjectBuilder2
             this.originalBuildKey = buildKey;
             this.BuildKey = buildKey;
             this.Existing = null;
-            this.resolverOverrides = resolverOverrides;
-            this.ownsOverrides = false;
+            this.resolverOverrides = resolverOverrides ?? new CompositeResolverOverride(); ;
+            this.ownsOverrides = null == resolverOverrides;
         }
+
+        public IUnityContainer Container { get; }
 
         /// <summary>
         /// Gets the head of the strategy chain.
@@ -239,12 +235,12 @@ namespace Microsoft.Practices.ObjectBuilder2
         /// <returns>Created object.</returns>
         public object NewBuildUp(NamedTypeBuildKey newBuildKey)
         {
-            this.ChildContext =
-                new BuilderContext(this.chain, lifetime, persistentPolicies, policies, newBuildKey, this.resolverOverrides);
+            ChildContext = new BuilderContext(Container, chain, lifetime, persistentPolicies, 
+                                              policies, newBuildKey, resolverOverrides);
 
-            object result = this.ChildContext.Strategies.ExecuteBuildUp(this.ChildContext);
+            var result = ChildContext.Strategies.ExecuteBuildUp(ChildContext);
 
-            this.ChildContext = null;
+            ChildContext = null;
 
             return result;
         }
@@ -255,23 +251,21 @@ namespace Microsoft.Practices.ObjectBuilder2
         /// of the build.
         /// </summary>
         /// <param name="newBuildKey">Key defining what to build up.</param>
-        /// <param name="childCustomizationBlock">A delegate that takes a <see cref="IBuilderContext"/>. This
+        /// <param name="action">A delegate that takes a <see cref="IBuilderContext"/>. This
         /// is invoked with the new child context before the build up process starts. This gives callers
         /// the opportunity to customize the context for the build process.</param>
         /// <returns>Created object.</returns>
-        [SuppressMessage("Microsoft.Design", "CA1062:ValidateArgumentsOfPublicMethods", Justification = "Checked with Guard class")]
-        public object NewBuildUp(NamedTypeBuildKey newBuildKey, Action<IBuilderContext> childCustomizationBlock)
+        public object NewBuildUp(NamedTypeBuildKey newBuildKey, Action<IBuilderContext> action)
         {
-            Guard.ArgumentNotNull(childCustomizationBlock, "childCustomizationBlock");
+            var childCustomizationBlock = action ?? throw new ArgumentNullException(nameof(action));
 
-            this.ChildContext =
-                new BuilderContext(this.chain, lifetime, persistentPolicies, policies, newBuildKey, this.resolverOverrides);
+            ChildContext = new BuilderContext(Container, chain, lifetime, persistentPolicies, policies, newBuildKey, resolverOverrides);
 
-            childCustomizationBlock(this.ChildContext);
+            childCustomizationBlock(ChildContext);
 
-            object result = this.ChildContext.Strategies.ExecuteBuildUp(this.ChildContext);
+            var result = ChildContext.Strategies.ExecuteBuildUp(ChildContext);
 
-            this.ChildContext = null;
+            ChildContext = null;
 
             return result;
         }

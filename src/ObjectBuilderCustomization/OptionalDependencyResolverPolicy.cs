@@ -1,14 +1,13 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
-using Microsoft.Practices.ObjectBuilder2;
-using Microsoft.Practices.Unity.Properties;
-using Microsoft.Practices.Unity.Utility;
+using ObjectBuilder2;
+using Unity.Properties;
+using Unity.Utility;
 
-namespace Microsoft.Practices.Unity
+namespace Unity
 {
     /// <summary>
     /// A <see cref="IDependencyResolverPolicy"/> that will attempt to
@@ -73,8 +72,6 @@ namespace Microsoft.Practices.Unity
         /// </summary>
         /// <param name="context">Current build context.</param>
         /// <returns>The value for the dependency.</returns>
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes",
-            Justification = "Entire purpose of this class is to eat the exception")]
         public object Resolve(IBuilderContext context)
         {
             Guard.ArgumentNotNull(context, "context");

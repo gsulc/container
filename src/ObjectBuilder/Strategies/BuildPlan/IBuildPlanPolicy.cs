@@ -2,7 +2,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.Practices.ObjectBuilder2
+namespace ObjectBuilder2
 {
     /// <summary>
     /// A build plan is an object that, when invoked, will create a new object
@@ -16,8 +16,6 @@ namespace Microsoft.Practices.ObjectBuilder2
         /// in the existing type if passed in.
         /// </summary>
         /// <param name="context">Context used to build up the object.</param>
-        [SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly", MessageId = "BuildUp",
-            Justification = "Kept for backward compatibility with ObjectBuilder")]
         void BuildUp(IBuilderContext context);
     }
 }

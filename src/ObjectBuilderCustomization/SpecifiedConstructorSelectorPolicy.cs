@@ -1,13 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Reflection;
-using Microsoft.Practices.ObjectBuilder2;
-using Microsoft.Practices.Unity;
-using Microsoft.Practices.Unity.Utility;
+using ObjectBuilder2;
+using Unity.Utility;
 
-namespace Microsoft.Practices.Unity.ObjectBuilder
+namespace Unity.ObjectBuilder
 {
     /// <summary>
     /// An implementation of <see cref="IConstructorSelectorPolicy"/> that selects
@@ -28,7 +26,6 @@ namespace Microsoft.Practices.Unity.ObjectBuilder
         /// <param name="ctor">The constructor to call.</param>
         /// <param name="parameterValues">Set of <see cref="InjectionParameterValue"/> objects
         /// that describes how to obtain the values for the constructor parameters.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "ctor", Justification = "Parameter name is meaningful enough in context (ctor is in common use)")]
         public SpecifiedConstructorSelectorPolicy(ConstructorInfo ctor, InjectionParameterValue[] parameterValues)
         {
             this.ctor = ctor;
@@ -43,11 +40,9 @@ namespace Microsoft.Practices.Unity.ObjectBuilder
         /// <param name="resolverPolicyDestination">The <see cref='IPolicyList'/> to add any
         /// generated resolver objects into.</param>
         /// <returns>The chosen constructor.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:ValidateArgumentsOfPublicMethods",
-             Justification = "Validation done by Guard class")]
         public SelectedConstructor SelectConstructor(IBuilderContext context, IPolicyList resolverPolicyDestination)
         {
-            Microsoft.Practices.Unity.Utility.Guard.ArgumentNotNull(context, "context");
+            Unity.Utility.Guard.ArgumentNotNull(context, "context");
 
             SelectedConstructor result;
             Type typeToBuild = context.BuildKey.Type;
@@ -60,8 +55,8 @@ namespace Microsoft.Practices.Unity.ObjectBuilder
             else
             {
                 Type[] closedCtorParameterTypes =
-                    ctorReflector.GetClosedParameterTypes(typeToBuild.GenericTypeArguments);
-                result = new SelectedConstructor(typeToBuild.GetConstructor(closedCtorParameterTypes));
+                    ctorReflector.GetClosedParameterTypes(typeToBuild.GetTypeInfo().GenericTypeArguments);
+                result = new SelectedConstructor(typeToBuild.GetConstructorInfo(closedCtorParameterTypes));
             }
 
             SpecifiedMemberSelectorHelper.AddParameterResolvers(typeToBuild, resolverPolicyDestination, parameterValues, result);

@@ -2,12 +2,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using Microsoft.Practices.Unity;
-using Microsoft.Practices.Unity.Utility;
+using Unity;
+using Unity.Utility;
 
-namespace Microsoft.Practices.ObjectBuilder2
+namespace ObjectBuilder2
 {
     /// <summary>
     /// Build plan for <see cref="Func{TResult}"/> that will return a Func that will resolve the requested type
@@ -15,14 +14,13 @@ namespace Microsoft.Practices.ObjectBuilder2
     /// </summary>
     internal class DeferredResolveBuildPlanPolicy : IBuildPlanPolicy
     {
-        [SuppressMessage("Microsoft.Design", "CA1062:ValidateArgumentsOfPublicMethods", Justification = "Validation done by Guard class")]
         public void BuildUp(IBuilderContext context)
         {
             Guard.ArgumentNotNull(context, "context");
 
             if (context.Existing == null)
             {
-                var currentContainer = context.NewBuildUp<IUnityContainer>();
+                var currentContainer = context.Container ?? context.NewBuildUp<IUnityContainer>();
 
                 Type typeToBuild = GetTypeToBuild(context.BuildKey.Type);
                 string nameToBuild = context.BuildKey.Name;

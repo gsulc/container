@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Practices.ObjectBuilder2;
-using Microsoft.Practices.Unity.Utility;
+using ObjectBuilder2;
+using Unity.Utility;
 
-namespace Microsoft.Practices.Unity.ObjectBuilder
+namespace Unity.ObjectBuilder
 {
     /// <summary>
     /// An implementation of <see cref="IDependencyResolverPolicy"/> that stores a
@@ -15,7 +14,7 @@ namespace Microsoft.Practices.Unity.ObjectBuilder
     public class NamedTypeDependencyResolverPolicy : IDependencyResolverPolicy
     {
         private Type type;
-        private string name;
+        private readonly string name;
 
         /// <summary>
         /// Create an instance of <see cref="NamedTypeDependencyResolverPolicy"/>
@@ -35,7 +34,6 @@ namespace Microsoft.Practices.Unity.ObjectBuilder
         /// <param name="context">Current build context.</param>
         /// <returns>The value for the dependency.</returns>
         // FxCop suppression: Validation is done by Guard class
-        [SuppressMessage("Microsoft.Design", "CA1062:ValidateArgumentsOfPublicMethods", Justification = "Validation is done by Guard class.")]
         public object Resolve(IBuilderContext context)
         {
             Guard.ArgumentNotNull(context, "context");
@@ -45,7 +43,6 @@ namespace Microsoft.Practices.Unity.ObjectBuilder
         /// <summary>
         /// The type that this resolver resolves.
         /// </summary>
-        [SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods", Justification = "This is the type part of the key.")]
         public Type Type
         {
             get { return type; }

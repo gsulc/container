@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved. See License.txt in the project root for license information.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Practices.ObjectBuilder2;
-using Microsoft.Practices.Unity.Utility;
+using ObjectBuilder2;
+using Unity.Utility;
 
-namespace Microsoft.Practices.Unity.ObjectBuilder
+namespace Unity.ObjectBuilder
 {
     /// <summary>
     /// An implementation of <see cref="IConstructorSelectorPolicy"/> that is
@@ -24,19 +23,18 @@ namespace Microsoft.Practices.Unity.ObjectBuilder
         /// for this parameter.</remarks>
         /// <param name="parameter">Parameter to create the resolver for.</param>
         /// <returns>The resolver object.</returns>
-        [SuppressMessage("Microsoft.Design", "CA1062:ValidateArgumentsOfPublicMethods", Justification = "Validation done by Guard class")]
         protected override IDependencyResolverPolicy CreateResolver(ParameterInfo parameter)
         {
             Guard.ArgumentNotNull(parameter, "parameter");
 
             // Resolve all DependencyAttributes on this parameter, if any
-            var attrs = parameter.GetCustomAttributes(false).OfType<DependencyResolutionAttribute>().ToList();
+            var attr = parameter.GetCustomAttributes(false)?.OfType<DependencyResolutionAttribute>().FirstOrDefault();
 
-            if (attrs.Count > 0)
+            if (attr != null)
             {
                 // Since this attribute is defined with MultipleUse = false, the compiler will
                 // enforce at most one. So we don't need to check for more.
-                return attrs[0].CreateResolver(parameter.ParameterType);
+                return attr.CreateResolver(parameter.ParameterType);
             }
 
             // No attribute, just go back to the container for the default for that type.

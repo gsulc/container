@@ -2,13 +2,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Microsoft.Practices.Unity.Utility;
+using Unity.Utility;
 
-namespace Microsoft.Practices.ObjectBuilder2
+namespace ObjectBuilder2
 {
     /// <summary>
     /// 
@@ -20,13 +19,16 @@ namespace Microsoft.Practices.ObjectBuilder2
         private readonly Queue<Expression> buildPlanExpressions;
 
         private static readonly MethodInfo ResolveDependencyMethod =
-            StaticReflection.GetMethodInfo((IDependencyResolverPolicy r) => r.Resolve(null));
+            typeof(IDependencyResolverPolicy).GetTypeInfo().DeclaredMethods
+                .First(m => Equals(m.Name, nameof(IDependencyResolverPolicy.Resolve)));
 
         private static readonly MethodInfo GetResolverMethod =
-            StaticReflection.GetMethodInfo(() => GetResolver(null, null, (IDependencyResolverPolicy)null));
+            typeof(DynamicBuildPlanGenerationContext).GetTypeInfo().DeclaredMethods
+                .First(m => Equals(m.Name, nameof(DynamicBuildPlanGenerationContext.GetResolver)));
 
         private static readonly MemberInfo GetBuildContextExistingObjectProperty =
-            StaticReflection.GetMemberInfo((IBuilderContext c) => c.Existing);
+            typeof(IBuilderContext).GetTypeInfo().DeclaredMembers
+                .First(m => Equals(m.Name, nameof(IBuilderContext.Existing)));
 
         /// <summary>
         /// 
@@ -162,22 +164,6 @@ namespace Microsoft.Practices.ObjectBuilder2
                 Expression.MakeMemberAccess(
                     this.ContextParameter,
                     typeof(IBuilderContext).GetTypeInfo().GetDeclaredProperty("CurrentOperation")));
-        }
-
-        /// <summary>
-        /// Helper method used by generated IL to look up a dependency resolver based on the given key.
-        /// </summary>
-        /// <param name="context">Current build context.</param>
-        /// <param name="dependencyType">Type of the dependency being resolved.</param>
-        /// <param name="resolverKey">Key the resolver was stored under.</param>
-        /// <returns>The found dependency resolver.</returns>
-        [Obsolete("Resolvers are no longer stored as policies.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "context", Justification = "Obsolete method")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "dependencyType", Justification = "Obsolete method")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "resolverKey", Justification = "Obsolete method")]
-        public static IDependencyResolverPolicy GetResolver(IBuilderContext context, Type dependencyType, string resolverKey)
-        {
-            throw new NotSupportedException("This method is no longer used");
         }
 
         /// <summary>

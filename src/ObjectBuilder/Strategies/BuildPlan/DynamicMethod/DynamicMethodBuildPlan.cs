@@ -1,11 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Microsoft.Practices.ObjectBuilder2
+namespace ObjectBuilder2
 {
     /// <summary>
     /// 
@@ -18,7 +14,7 @@ namespace Microsoft.Practices.ObjectBuilder2
     /// </summary>
     public class DynamicMethodBuildPlan : IBuildPlanPolicy
     {
-        private DynamicBuildPlanMethod buildMethod;
+        private readonly DynamicBuildPlanMethod buildMethod;
 
         /// <summary>
         /// 

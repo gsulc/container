@@ -5,10 +5,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Microsoft.Practices.ObjectBuilder2;
-using Microsoft.Practices.Unity.Utility;
+using ObjectBuilder2;
+using Unity.Utility;
 
-namespace Microsoft.Practices.Unity
+namespace Unity
 {
     /// <summary>
     /// A <see cref="InjectionParameterValue"/> that can be passed to
@@ -56,7 +56,7 @@ namespace Microsoft.Practices.Unity
             Type typeToResolve = parameterReflector.Type;
             if (parameterReflector.IsOpenGeneric)
             {
-                typeToResolve = parameterReflector.GetClosedParameterType(typeToBuild.GenericTypeArguments);
+                typeToResolve = parameterReflector.GetClosedParameterType(typeToBuild.GetTypeInfo().GenericTypeArguments);
             }
 
             return new OptionalDependencyResolverPolicy(typeToResolve, this.name);

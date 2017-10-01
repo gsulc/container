@@ -4,11 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.Practices.Unity
+namespace Unity
 {
     internal class RegisteredNamesPolicy : IRegisteredNamesPolicy
     {
-        private NamedTypesRegistry registry;
+        private readonly NamedTypesRegistry registry;
 
         public RegisteredNamesPolicy(NamedTypesRegistry registry)
         {

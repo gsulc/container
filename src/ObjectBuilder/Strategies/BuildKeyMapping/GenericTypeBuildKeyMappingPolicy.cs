@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
-using Microsoft.Practices.Unity.Properties;
-using Microsoft.Practices.Unity.Utility;
+using Unity;
+using Unity.Properties;
+using Unity.Utility;
 
-namespace Microsoft.Practices.ObjectBuilder2
+namespace ObjectBuilder2
 {
     /// <summary>
     /// An implementation of <see cref="IBuildKeyMappingPolicy"/> that can map
@@ -16,6 +16,7 @@ namespace Microsoft.Practices.ObjectBuilder2
     public class GenericTypeBuildKeyMappingPolicy : IBuildKeyMappingPolicy
     {
         private readonly NamedTypeBuildKey destinationKey;
+        private readonly InjectionMember[] injectionMembers;
 
         /// <summary>
         /// Create a new <see cref="GenericTypeBuildKeyMappingPolicy"/> instance
@@ -23,8 +24,7 @@ namespace Microsoft.Practices.ObjectBuilder2
         /// </summary>
         /// <param name="destinationKey">Build key to map to. This must be or contain an open generic type.</param>
         // FxCop suppression: Validation is done by Guard class
-        [SuppressMessage("Microsoft.Design", "CA1062:ValidateArgumentsOfPublicMethods", Justification = "Validation is done by Guard class")]
-        public GenericTypeBuildKeyMappingPolicy(NamedTypeBuildKey destinationKey)
+        public GenericTypeBuildKeyMappingPolicy(NamedTypeBuildKey destinationKey, InjectionMember[] injectionMembers = null)
         {
             Guard.ArgumentNotNull(destinationKey, "destinationKey");
             if (!destinationKey.Type.GetTypeInfo().IsGenericTypeDefinition)
@@ -34,7 +34,9 @@ namespace Microsoft.Practices.ObjectBuilder2
                                   Resources.MustHaveOpenGenericType,
                                   destinationKey.Type.GetTypeInfo().Name));
             }
+
             this.destinationKey = destinationKey;
+            this.injectionMembers = injectionMembers;
         }
 
         /// <summary>
@@ -69,7 +71,7 @@ namespace Microsoft.Practices.ObjectBuilder2
                     string.Format(CultureInfo.CurrentCulture,
                                   Resources.MustHaveSameNumberOfGenericArguments,
                                   sourceTypeInfo.Name, this.DestinationType.Name),
-                    "sourceTypeInfo");
+                    nameof(sourceTypeInfo));
             }
         }
 

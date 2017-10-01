@@ -3,7 +3,7 @@
 using System;
 using System.Reflection;
 
-namespace Microsoft.Practices.ObjectBuilder2
+namespace ObjectBuilder2
 {
     /// <summary>
     /// An implementation of <see cref="IMethodSelectorPolicy"/> that selects
@@ -21,11 +21,9 @@ namespace Microsoft.Practices.ObjectBuilder2
         /// </summary>
         /// <param name="parameter">Parameter to create the resolver for.</param>
         /// <returns>The resolver object.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:ValidateArgumentsOfPublicMethods",
-            Justification = "Validation done by Guard class")]
         protected override IDependencyResolverPolicy CreateResolver(ParameterInfo parameter)
         {
-            Microsoft.Practices.Unity.Utility.Guard.ArgumentNotNull(parameter, "parameter");
+            Unity.Utility.Guard.ArgumentNotNull(parameter, "parameter");
 
             return new FixedTypeResolverPolicy(parameter.ParameterType);
         }

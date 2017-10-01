@@ -2,11 +2,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
-using Microsoft.Practices.Unity;
-using Microsoft.Practices.Unity.Utility;
+using Unity;
+using Unity.Utility;
 
-namespace Microsoft.Practices.ObjectBuilder2
+namespace ObjectBuilder2
 {
     /// <summary>
     /// An <see cref="IBuildPlanCreatorPolicy"/> implementation
@@ -14,8 +15,13 @@ namespace Microsoft.Practices.ObjectBuilder2
     /// </summary>
     public class LazyDynamicMethodBuildPlanCreatorPolicy : IBuildPlanCreatorPolicy
     {
-        private static readonly MethodInfo BuildResolveLazyMethod = StaticReflection.GetMethodInfo(() => LazyDynamicMethodBuildPlanCreatorPolicy.BuildResolveLazy<object>(null)).GetGenericMethodDefinition();
-        private static readonly MethodInfo BuildResolveAllLazyMethod = StaticReflection.GetMethodInfo(() => LazyDynamicMethodBuildPlanCreatorPolicy.BuildResolveAllLazy<object>(null)).GetGenericMethodDefinition();
+        private static readonly MethodInfo BuildResolveLazyMethod = 
+            typeof(LazyDynamicMethodBuildPlanCreatorPolicy).GetTypeInfo().DeclaredMethods
+                .First(m => Equals(m.Name, nameof(LazyDynamicMethodBuildPlanCreatorPolicy.BuildResolveLazy)));
+
+        private static readonly MethodInfo BuildResolveAllLazyMethod =
+            typeof(LazyDynamicMethodBuildPlanCreatorPolicy).GetTypeInfo().DeclaredMethods
+                .First(m => Equals(m.Name, nameof(LazyDynamicMethodBuildPlanCreatorPolicy.BuildResolveAllLazy)));
 
         /// <summary>
         /// Creates a build plan using the given context and build key.
@@ -56,7 +62,7 @@ namespace Microsoft.Practices.ObjectBuilder2
             if (context.Existing == null)
             {
                 var name = context.BuildKey.Name;
-                var container = context.NewBuildUp<IUnityContainer>();
+                var container = context.Container ?? context.NewBuildUp<IUnityContainer>();
                 context.Existing = new Lazy<T>(() => container.Resolve<T>(name));
             }
 
@@ -68,7 +74,7 @@ namespace Microsoft.Practices.ObjectBuilder2
         {
             if (context.Existing == null)
             {
-                var container = context.NewBuildUp<IUnityContainer>();
+                var container = context.Container ?? context.NewBuildUp<IUnityContainer>();
                 context.Existing = new Lazy<IEnumerable<T>>(() => container.ResolveAll<T>());
             }
 

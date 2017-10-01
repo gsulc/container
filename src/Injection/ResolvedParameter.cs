@@ -2,12 +2,12 @@
 
 using System;
 using System.Reflection;
-using Microsoft.Practices.ObjectBuilder2;
-using Microsoft.Practices.Unity.ObjectBuilder;
-using Microsoft.Practices.Unity.Utility;
-using Guard = Microsoft.Practices.Unity.Utility.Guard;
+using ObjectBuilder2;
+using Unity.ObjectBuilder;
+using Unity.Utility;
+using Guard = Unity.Utility.Guard;
 
-namespace Microsoft.Practices.Unity
+namespace Unity
 {
     /// <summary>
     /// A class that stores a name and type, and generates a 
@@ -47,8 +47,6 @@ namespace Microsoft.Practices.Unity
         /// <param name="typeToBuild">Type that contains the member that needs this parameter. Used
         /// to resolve open generic parameters.</param>
         /// <returns>The <see cref="IDependencyResolverPolicy"/>.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:ValidateArgumentsOfPublicMethods",
-            Justification = "Validation done via Guard class")]
         public override IDependencyResolverPolicy GetResolverPolicy(Type typeToBuild)
         {
             Guard.ArgumentNotNull(typeToBuild, "typeToBuild");
@@ -76,13 +74,13 @@ namespace Microsoft.Practices.Unity
         private IDependencyResolverPolicy CreateGenericResolverPolicy(Type typeToBuild, ReflectionHelper parameterReflector)
         {
             return new NamedTypeDependencyResolverPolicy(
-                parameterReflector.GetClosedParameterType(typeToBuild.GenericTypeArguments),
+                parameterReflector.GetClosedParameterType(typeToBuild.GetTypeInfo().GenericTypeArguments),
                 this.name);
         }
 
         private IDependencyResolverPolicy CreateGenericArrayResolverPolicy(Type typeToBuild, ReflectionHelper parameterReflector)
         {
-            Type arrayType = parameterReflector.GetClosedParameterType(typeToBuild.GenericTypeArguments);
+            Type arrayType = parameterReflector.GetClosedParameterType(typeToBuild.GetTypeInfo().GenericTypeArguments);
             return new NamedTypeDependencyResolverPolicy(arrayType, this.name);
         }
     }
