@@ -310,9 +310,9 @@ namespace Unity
                         _registrations.Buckets[targetBucket] = _registrations.Count;
                         _registrations.Count++;
                     }
-                }
 
-                return registration.Get(interfaceType);
+                    return registration.Get(interfaceType);
+                }
             }
             set
             {
@@ -411,6 +411,55 @@ namespace Unity
 
                 return null;
             }
+        }
+
+        private IPolicySet GetOrAdd(Type type, string name)
+        {
+            var collisions = 0;
+            var hashCode = (type?.GetHashCode() ?? 0) & 0x7FFFFFFF;
+            var targetBucket = hashCode % _registrations.Buckets.Length;
+            lock (_syncRoot)
+            {
+                for (var i = _registrations.Buckets[targetBucket]; i >= 0; i = _registrations.Entries[i].Next)
+                {
+                    if (_registrations.Entries[i].HashCode != hashCode ||
+                        _registrations.Entries[i].Key != type)
+                    {
+                        collisions++;
+                        continue;
+                    }
+
+                    var existing = _registrations.Entries[i].Value;
+                    if (existing.RequireToGrow)
+                    {
+                        existing = existing is HashRegistry<string, IPolicySet> registry
+                                 ? new HashRegistry<string, IPolicySet>(registry)
+                                 : new HashRegistry<string, IPolicySet>(LinkedRegistry.ListToHashCutoverPoint * 2,
+                                                                                       (LinkedRegistry)existing);
+
+                        _registrations.Entries[i].Value = existing;
+                    }
+
+                    return existing.GetOrAdd(name, () => CreateRegistration(type, name));
+                }
+
+                if (_registrations.RequireToGrow || ListToHashCutoverPoint < collisions)
+                {
+                    _registrations = new HashRegistry<Type, IRegistry<string, IPolicySet>>(_registrations);
+                    targetBucket = hashCode % _registrations.Buckets.Length;
+                }
+
+                var registration = CreateRegistration(type, name);
+                _registrations.Entries[_registrations.Count].HashCode = hashCode;
+                _registrations.Entries[_registrations.Count].Next = _registrations.Buckets[targetBucket];
+                _registrations.Entries[_registrations.Count].Key = type;
+                _registrations.Entries[_registrations.Count].Value = new LinkedRegistry(name, registration);
+                _registrations.Buckets[targetBucket] = _registrations.Count;
+                _registrations.Count++;
+
+                return registration;
+            }
+
         }
 
         #endregion

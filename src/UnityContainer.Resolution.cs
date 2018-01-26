@@ -27,6 +27,11 @@ namespace Unity
         /// <returns>The retrieved object.</returns>
         public object Resolve(Type type, string name, params ResolverOverride[] resolverOverrides)
         {
+            // Get registration
+            //var registration = GetOrAdd(type, name);
+            //if (null == registration)
+            //    System.Diagnostics.Debug.Assert(null != registration);
+
             return BuildUp(type, null, name, resolverOverrides);
         }
 
