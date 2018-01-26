@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Unity.Builder;
+using Unity.Builder.Selection;
 using Unity.Builder.Strategy;
 using Unity.Container;
 using Unity.Container.Lifetime;
@@ -218,6 +219,12 @@ namespace Unity
             public override IPolicyList Policies => _container._policies;
 
             public override ILifetimeContainer Lifetime => _container._lifetimeContainer;
+
+            public override IStagedStrategyChain<ISelectConstructor, SelectorStage> ConstructorSelectStrategies => throw new NotImplementedException();
+
+            public override IStagedStrategyChain<ISelectProperties, SelectorStage> PropertySelectStrategies => throw new NotImplementedException();
+
+            public override IStagedStrategyChain<ISelectMethods, SelectorStage> MethodSelectStrategies => throw new NotImplementedException();
 
             public override event EventHandler<RegisterEventArgs> Registering
             {

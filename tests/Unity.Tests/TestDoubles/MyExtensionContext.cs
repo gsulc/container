@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved. See License.txt in the project root for license information.
 using System;
 using Unity.Builder;
+using Unity.Builder.Selection;
 using Unity.Builder.Strategy;
 using Unity.Container;
 using Unity.Events;
@@ -47,6 +48,12 @@ namespace Unity.Tests.TestDoubles
         {
             get { return null; }
         }
+
+        public override IStagedStrategyChain<ISelectConstructor, SelectorStage> ConstructorSelectStrategies => throw new NotImplementedException();
+
+        public override IStagedStrategyChain<ISelectProperties, SelectorStage> PropertySelectStrategies => throw new NotImplementedException();
+
+        public override IStagedStrategyChain<ISelectMethods, SelectorStage> MethodSelectStrategies => throw new NotImplementedException();
 
         public override event EventHandler<RegisterEventArgs> Registering
         {
