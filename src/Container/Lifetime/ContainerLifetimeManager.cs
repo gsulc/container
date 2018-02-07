@@ -13,14 +13,6 @@ namespace Unity.Container.Lifetime
             return context.Container;
         }
 
-        public override void SetValue(object newValue, IBuilderContext context = null)
-        {
-        }
-
-        public override void RemoveValue(IBuilderContext context = null)
-        {
-        }
-
         protected override LifetimeManager OnCreateLifetimeManager()
         {
             return new ContainerLifetimeManager();
