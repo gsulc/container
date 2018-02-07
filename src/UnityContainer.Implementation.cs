@@ -86,9 +86,6 @@ namespace Unity
             // Caches
             OnStrategiesChanged(this, null);
             _strategies.Invalidated += OnStrategiesChanged;
-
-            // Register this instance
-            RegisterInstance(typeof(IUnityContainer), null, this, new ContainerLifetimeManager());
         }
 
         #endregion
@@ -119,6 +116,8 @@ namespace Unity
             this[typeof(IEnumerable<>), string.Empty, typeof(IBuildPlanCreatorPolicy)] = 
                 new DelegateBasedBuildPlanCreatorPolicy(typeof(UnityContainer).GetTypeInfo().GetDeclaredMethod(nameof(ResolveEnumerable)),
                                                         context => context.BuildKey.Type.GetTypeInfo().GenericTypeArguments.First());
+            // Register container
+            RegisterInstance(typeof(IUnityContainer), null, this, new ContainerLifetimeManager());
         }
 
 
