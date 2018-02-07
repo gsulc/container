@@ -71,8 +71,6 @@ namespace Unity
             // Caches
             OnStrategiesChanged(this, null);
             _strategies.Invalidated += OnStrategiesChanged;
-
-            RegisterInstance(typeof(IUnityContainer), null, this, new ContainerLifetimeManager());
         }
 
         #endregion
@@ -103,6 +101,8 @@ namespace Unity
             _policies.Set<ILifetimePolicy>(new PerResolveLifetimeManager(), typeof(Func<>));
             _policies.Set<IBuildPlanCreatorPolicy>(new LazyDynamicMethodBuildPlanCreatorPolicy(), typeof(Lazy<>));
             _policies.Set<IBuildPlanCreatorPolicy>(new EnumerableDynamicMethodBuildPlanCreatorPolicy(), typeof(IEnumerable<>));
+
+            RegisterInstance(typeof(IUnityContainer), null, this, new ContainerLifetimeManager());
         }
 
 
@@ -251,27 +251,19 @@ namespace Unity
 
 
         // Works like the ExternallyControlledLifetimeManager, but uses regular instead of weak references
-        private class ContainerLifetimeManager : LifetimeManager, IBuildPlanPolicy
+        private class ContainerLifetimeManager : LifetimeManager
         {
-            private object _value;
-
             public override object GetValue(IBuilderContext context = null)
             {
-                return _value;
+                return context.Container;
             }
 
             public override void SetValue(object newValue, IBuilderContext context = null)
             {
-                _value = newValue;
             }
 
             public override void RemoveValue(IBuilderContext context = null)
             {
-            }
-
-            public void BuildUp(IBuilderContext context)
-            {
-                context.Existing = _value;
             }
 
             protected override LifetimeManager OnCreateLifetimeManager()
@@ -279,6 +271,7 @@ namespace Unity
                 return new ContainerLifetimeManager();
             }
         }
+
 
         #endregion
     }
