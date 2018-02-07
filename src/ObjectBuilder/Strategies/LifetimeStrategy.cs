@@ -44,7 +44,7 @@ namespace Unity.ObjectBuilder.Strategies
                 context.RecoveryStack.Add(recovery);
             }
 
-            var existing = lifetimePolicy?.GetValue(context.Lifetime);
+            var existing = lifetimePolicy?.GetValue(context);
             if (existing != null)
             {
                 context.Existing = existing;
@@ -64,7 +64,7 @@ namespace Unity.ObjectBuilder.Strategies
             // If we got to this method, then we know the lifetime policy didn't
             // find the object. So we go ahead and store it.
             ILifetimePolicy lifetimePolicy = GetLifetimePolicy(context, out IPolicyList _);
-            lifetimePolicy.SetValue(context.Existing, context.Lifetime);
+            lifetimePolicy.SetValue(context.Existing, context);
         }
 
         private ILifetimePolicy GetLifetimePolicy(IBuilderContext context, out IPolicyList source)
