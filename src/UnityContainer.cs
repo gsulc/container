@@ -42,61 +42,74 @@ namespace Unity
         #region Type Registration
 
         /// <summary>
-        /// RegisterType a type mapping with the container, where the created instances will use
+        /// Register a type mapping with the container, where the created instances will use
         /// the given <see cref="LifetimeManager"/>.
         /// </summary>
-        /// <param name="typeFrom"><see cref="Type"/> that will be requested.</param>
-        /// <param name="typeTo"><see cref="Type"/> that will actually be returned.</param>
+        /// <remarks><paramref name="registeredType"/> type and <paramref name="mappedTo"/> type must be assignable.</remarks>
+        /// <param name="registeredType">Registered <see cref="Type"/>. Or the <see cref="Type"/> that 
+        /// will be requested when resolving.</param>
         /// <param name="name">Name to use for registration, null if a default registration.</param>
+        /// <param name="mappedTo"><see cref="Type"/> that will be used to actually costruct registered type. 
+        /// <paramref name="mappedTo"/> must be derived from or implement <paramref name="registeredType"/> </param>
         /// <param name="lifetimeManager">The <see cref="LifetimeManager"/> that controls the lifetime
         /// of the returned instance.</param>
-        /// <param name="injectionMembers">Injection configuration objects.</param>
-        /// <returns>The <see cref="UnityContainer"/> object that this method was called on 
-        /// (this in C#, Me in Visual Basic).</returns>
-        public IUnityContainer RegisterType(Type typeFrom, Type typeTo, string name, 
-                                            LifetimeManager lifetimeManager, InjectionMember[] injectionMembers)
+        /// <param name="injectionMembers">Injection configuration objects. Can be null.</param>
+        /// <returns>The <see cref="IUnityContainer"/> object that this method was called on (this in C#, Me in Visual Basic).</returns>
+        /// <example> 
+        /// // To register mapping between interface IFoo and implementation type foo use following:
+        /// container.RegisterType(typeof(IFoo), name, typeof(Foo), ...); 
+        /// 
+        /// // To register just a type Foo use following syntax:
+        /// container.RegisterType(typeof(Foo), name, null, ...);
+        /// </example>
+        public IUnityContainer RegisterType(Type registeredType, string name, 
+                                            Type mappedTo, 
+                                            LifetimeManager lifetimeManager, 
+                                            params InjectionMember[] injectionMembers)
         {
             // Validate input 
             if (string.Empty == name) name = null;
 
-            if (null == typeTo) throw new ArgumentNullException(nameof(typeTo));
+            if (null == registeredType) throw new ArgumentNullException(nameof(registeredType));
 
-            if (typeFrom != null && !typeFrom.GetTypeInfo().IsGenericType && !typeTo.GetTypeInfo().IsGenericType && 
-                !typeFrom.GetTypeInfo().IsAssignableFrom(typeTo.GetTypeInfo()))
+            if (mappedTo != null && 
+                !registeredType.GetTypeInfo().IsGenericType && !mappedTo.GetTypeInfo().IsGenericType && 
+                !registeredType.GetTypeInfo().IsAssignableFrom(mappedTo.GetTypeInfo()))
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Constants.TypesAreNotAssignable,
-                                                                                      typeFrom, typeTo), nameof(typeFrom));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, 
+                                                          Constants.TypesAreNotAssignable,
+                                                          registeredType, mappedTo), nameof(registeredType));
             }
 
             // Register Type
-            var buildType = typeFrom ?? typeTo;
             var container = (lifetimeManager is ISingletonLifetimePolicy) ? GetRootContainer() : this;
 
             // Clear build plan
-            container._policies.Set(buildType, name, typeof(IBuildPlanPolicy), new OverriddenBuildPlanMarkerPolicy());
+            container._policies.Set(registeredType, name, typeof(IBuildPlanPolicy), new OverriddenBuildPlanMarkerPolicy());
 
             // Register Type/Name
-            container._registeredNames.RegisterType(buildType, name);
+            container._registeredNames.RegisterType(registeredType, name);
 
             // Add Injection Members to the list
             if (null != injectionMembers && injectionMembers.Length > 0)
             {
                 foreach (var member in injectionMembers)
                 {
-                    if (member is IInjectionFactory && null != typeFrom && typeFrom != typeTo)
+                    if (member is IInjectionFactory && null != mappedTo && registeredType != mappedTo)
                         throw new InvalidOperationException(Constants.CannotInjectFactory);
 
-                    member.AddPolicies(buildType, typeTo, name, container._policies);
+                    member.AddPolicies(registeredType, mappedTo ?? registeredType, name, container._policies);
                 }
             }
 
             // Register policies for each strategy
             var strategies = container._registerTypeStrategies;
             foreach (var strategy in strategies)
-                strategy.RegisterType(_context, typeFrom, typeTo, name, lifetimeManager, injectionMembers);
+                strategy.RegisterType(_context, registeredType, name, mappedTo, lifetimeManager, injectionMembers);
 
             // Raise event
-            container.Registering?.Invoke(this, new RegisterEventArgs(typeFrom, typeTo, name, lifetimeManager));
+            container.Registering?.Invoke(this, new RegisterEventArgs(null == mappedTo ? null : registeredType, 
+                                                                      mappedTo ?? registeredType, name, lifetimeManager));
 
             return this;
         }

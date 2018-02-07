@@ -145,12 +145,10 @@ namespace Microsoft.Practices.Unity.Tests
         [TestMethod]
         public void PropertyValueOverrideForTypeDifferentThanResolvedTypeIsIgnored()
         {
-            var container = new UnityContainer()
-                .RegisterType<ObjectTakingASomething>(
-                    new InjectionConstructor(),
-                    new InjectionProperty("MySomething"))
-                .RegisterType<ISomething, Something1>()
-                .RegisterType<ISomething, Something2>("other");
+            var container = new UnityContainer();
+            container.RegisterType<ObjectTakingASomething>(new InjectionConstructor(), new InjectionProperty("MySomething"));
+            container.RegisterType<ISomething, Something1>();
+            container.RegisterType<ISomething, Something2>("other"); 
 
             var result = container.Resolve<ObjectTakingASomething>(
                 new PropertyOverride("MySomething", new ResolvedParameter<ISomething>("other")).OnType<ObjectThatDependsOnSimpleObject>());

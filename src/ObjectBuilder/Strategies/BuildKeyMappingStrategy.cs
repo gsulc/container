@@ -32,29 +32,29 @@ namespace Unity.ObjectBuilder.Strategies
             return null;
         }
 
-        public void RegisterType(IContainerContext context, Type typeFrom, Type typeTo, string name, 
+        public void RegisterType(IContainerContext context, Type registeredType, string name, Type mappedTo, 
                                  LifetimeManager lifetimeManager, params InjectionMember[] injectionMembers)
         {
-            if (null == typeFrom || typeFrom == typeTo)
+            if (null == mappedTo || registeredType == mappedTo)
             {
-                context.Policies.Clear(typeTo, name, typeof(IBuildKeyMappingPolicy));
+                context.Policies.Clear(mappedTo, name, typeof(IBuildKeyMappingPolicy));
                 return;
             }
 
-            if (typeFrom.GetTypeInfo().IsGenericTypeDefinition && typeTo.GetTypeInfo().IsGenericTypeDefinition)
+            if (registeredType.GetTypeInfo().IsGenericTypeDefinition && mappedTo.GetTypeInfo().IsGenericTypeDefinition)
             {
-                context.Policies.Set<IBuildKeyMappingPolicy>(new GenericTypeBuildKeyMappingPolicy(new NamedTypeBuildKey(typeTo, name)), 
-                                                                                                  new NamedTypeBuildKey(typeFrom, name));
+                context.Policies.Set<IBuildKeyMappingPolicy>(new GenericTypeBuildKeyMappingPolicy(new NamedTypeBuildKey(mappedTo, name)), 
+                                                                                                  new NamedTypeBuildKey(registeredType, name));
             }
             else
             {
-                context.Policies.Set(typeFrom, name, typeof(IBuildKeyMappingPolicy), 
-                                     new BuildKeyMappingPolicy(new NamedTypeBuildKey(typeTo, name)));
+                context.Policies.Set(registeredType, name, typeof(IBuildKeyMappingPolicy), 
+                                     new BuildKeyMappingPolicy(new NamedTypeBuildKey(mappedTo, name)));
             }
 
             var members = null == injectionMembers ? new InjectionMember[0] : injectionMembers;
             if (!members.Where(m => m is InjectionConstructor || m is InjectionMethod || m is InjectionProperty).Any() && !(lifetimeManager is IRequireBuildUpPolicy))
-                context.Policies.Set(typeFrom, name, typeof(IBuildPlanPolicy), new ResolveBuildUpPolicy());
+                context.Policies.Set(registeredType, name, typeof(IBuildPlanPolicy), new ResolveBuildUpPolicy());
         }
     }
 }

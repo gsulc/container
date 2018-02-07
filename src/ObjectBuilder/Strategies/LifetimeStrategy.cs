@@ -123,14 +123,12 @@ namespace Unity.ObjectBuilder.Strategies
 
         #region IRegisterTypeStrategy
 
-        public void RegisterType(IContainerContext context, Type typeFrom, Type typeTo, string name, 
+        public void RegisterType(IContainerContext context, Type registeredType, string name, Type mappedTo, 
                                  LifetimeManager lifetimeManager, params InjectionMember[] injectionMembers)
         {
-            var lifetimeType = typeFrom ?? typeTo;
-
             if (null == lifetimeManager)
             {
-                context.Policies.Clear(lifetimeType, name, typeof(ILifetimePolicy));
+                context.Policies.Clear(registeredType, name, typeof(ILifetimePolicy));
                 return;
             }
 
@@ -139,15 +137,15 @@ namespace Unity.ObjectBuilder.Strategies
                 throw new InvalidOperationException(Constants.LifetimeManagerInUse);
             }
 
-            if (lifetimeType.GetTypeInfo().IsGenericTypeDefinition)
+            if (registeredType.GetTypeInfo().IsGenericTypeDefinition)
             {
                 LifetimeManagerFactory factory = new LifetimeManagerFactory((ExtensionContext)context, lifetimeManager);
-                context.Policies.Set<ILifetimeFactoryPolicy>(factory, new NamedTypeBuildKey(lifetimeType, name));
+                context.Policies.Set<ILifetimeFactoryPolicy>(factory, new NamedTypeBuildKey(registeredType, name));
             }
             else
             {
                 lifetimeManager.InUse = true;
-                context.Policies.Set<ILifetimePolicy>(lifetimeManager, new NamedTypeBuildKey(lifetimeType, name));
+                context.Policies.Set<ILifetimePolicy>(lifetimeManager, new NamedTypeBuildKey(registeredType, name));
                 if (lifetimeManager is IDisposable)
                 {
                     context.Lifetime.Add(lifetimeManager);
