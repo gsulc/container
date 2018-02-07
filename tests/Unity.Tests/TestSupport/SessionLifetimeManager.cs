@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using Microsoft.Practices.ObjectBuilder2;
-using Unity;
+using Unity.Builder;
 using Unity.Lifetime;
 
 namespace Microsoft.Practices.Unity.TestSupport
@@ -26,17 +26,17 @@ namespace Microsoft.Practices.Unity.TestSupport
             get { return this.sessionKey; }
         }
 
-        public override object GetValue(ILifetimeContainer container = null)
+        public override object GetValue(IBuilderContext context = null)
         {
             LastUsedSessionKey = this.sessionKey;
             return null;
         }
 
-        public override void SetValue(object newValue, ILifetimeContainer container = null)
+        public override void SetValue(object newValue, IBuilderContext context = null)
         {
         }
 
-        public override void RemoveValue(ILifetimeContainer container = null)
+        public override void RemoveValue(IBuilderContext context = null)
         {
         }
 

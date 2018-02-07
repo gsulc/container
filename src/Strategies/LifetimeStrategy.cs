@@ -43,7 +43,7 @@ namespace Unity.Strategies
                 context.RecoveryStack.Add(recovery);
             }
 
-            var existing = lifetimePolicy.GetValue(context.Lifetime);
+            var existing = lifetimePolicy.GetValue(context);
             if (existing != null)
             {
                 context.Existing = existing;
@@ -62,7 +62,7 @@ namespace Unity.Strategies
         /// <param name="lifetimePolicy"></param>
         public override void PostBuildUp(IBuilderContext context, object lifetimePolicy = null)
         {
-            (lifetimePolicy as ILifetimePolicy)?.SetValue(context.Existing, context.Lifetime);
+            (lifetimePolicy as ILifetimePolicy)?.SetValue(context.Existing, context);
         }
 
         #endregion

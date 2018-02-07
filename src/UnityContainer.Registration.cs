@@ -144,7 +144,7 @@ namespace Unity
             // TODO: Move to strategy
             var lifetime = lifetimeManager ?? new ContainerControlledLifetimeManager();
             if (lifetime.InUse) throw new InvalidOperationException(Constants.LifetimeManagerInUse);
-            lifetime.SetValue(instance, _lifetimeContainer);
+            lifetime.SetValue(instance, new BuilderContext(this, _lifetimeContainer, null, null, null, null, null, null));
 
             // Create registration and add to appropriate storage
             var registration = new InstanceRegistration(registrationType, registrationName, instance, lifetime);

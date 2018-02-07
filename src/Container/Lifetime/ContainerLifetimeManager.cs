@@ -15,17 +15,17 @@ namespace Unity.Container.Lifetime
     {
         private object _value;
 
-        public override object GetValue(ILifetimeContainer container = null)
+        public override object GetValue(IBuilderContext context = null)
         {
             return _value;
         }
 
-        public override void SetValue(object newValue, ILifetimeContainer container = null)
+        public override void SetValue(object newValue, IBuilderContext context = null)
         {
             _value = newValue;
         }
 
-        public override void RemoveValue(ILifetimeContainer container = null)
+        public override void RemoveValue(IBuilderContext context = null)
         {
         }
 

@@ -67,16 +67,16 @@ namespace Unity.Tests.ObjectBuilder
         {
             public bool WasRecovered = false;
 
-            public object GetValue(ILifetimeContainer container = null)
+            public object GetValue(IBuilderContext context = null)
             {
                 return null;
             }
 
-            public void SetValue(object newValue, ILifetimeContainer container = null)
+            public void SetValue(object newValue, IBuilderContext context = null)
             {
             }
 
-            public void RemoveValue(ILifetimeContainer container = null)
+            public void RemoveValue(IBuilderContext context = null)
             {
             }
 
