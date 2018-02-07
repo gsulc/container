@@ -35,32 +35,42 @@ namespace Unity
         #region Type Registration
 
         /// <summary>
-        /// RegisterType a type mapping with the container, where the created instances will use
+        /// Register a type mapping with the container, where the created instances will use
         /// the given <see cref="LifetimeManager"/>.
         /// </summary>
-        /// <param name="typeFrom"><see cref="Type"/> that will be requested.</param>
-        /// <param name="typeTo"><see cref="Type"/> that will actually be returned.</param>
+        /// <remarks><paramref name="registeredType"/> type and <paramref name="mappedTo"/> type must be assignable.</remarks>
+        /// <param name="registeredType">Registered <see cref="Type"/>. Or the <see cref="Type"/> that 
+        /// will be requested when resolving.</param>
         /// <param name="name">Name to use for registration, null if a default registration.</param>
+        /// <param name="mappedTo"><see cref="Type"/> that will be used to actually costruct registered type. 
+        /// <paramref name="mappedTo"/> must be derived from or implement <paramref name="registeredType"/> </param>
         /// <param name="lifetimeManager">The <see cref="LifetimeManager"/> that controls the lifetime
         /// of the returned instance.</param>
-        /// <param name="injectionMembers">Injection configuration objects.</param>
-        /// <returns>The <see cref="UnityContainer"/> object that this method was called on (this in C#, Me in Visual Basic).</returns>
-        public IUnityContainer RegisterType(Type typeFrom, Type typeTo, string name, LifetimeManager lifetimeManager, InjectionMember[] injectionMembers)
+        /// <param name="injectionMembers">Injection configuration objects. Can be null.</param>
+        /// <returns>The <see cref="IUnityContainer"/> object that this method was called on (this in C#, Me in Visual Basic).</returns>
+        /// <example> 
+        /// // To register mapping between interface IFoo and implementation type foo use following:
+        /// container.RegisterType(typeof(IFoo), name, typeof(Foo), ...); 
+        /// 
+        /// // To register just a type Foo use following syntax:
+        /// container.RegisterType(typeof(Foo), name, null, ...);
+        /// </example>
+        public IUnityContainer RegisterType(Type registeredType, string name, Type mappedTo, LifetimeManager lifetimeManager, params InjectionMember[] injectionMembers)
         {
             // Validate imput
             if (string.Empty == name) name = null; 
-            if (null == typeTo) throw new ArgumentNullException(nameof(typeTo));
+            if (null == registeredType) throw new ArgumentNullException(nameof(registeredType));
             if (null == lifetimeManager) lifetimeManager = TransientLifetimeManager.Instance;
-            if (typeFrom != null && !typeFrom.GetTypeInfo().IsGenericType && !typeTo.GetTypeInfo().IsGenericType && 
-                                    !typeFrom.GetTypeInfo().IsAssignableFrom(typeTo.GetTypeInfo()))
+            if (mappedTo != null && !registeredType.GetTypeInfo().IsGenericType && !mappedTo.GetTypeInfo().IsGenericType && 
+                                    !registeredType.GetTypeInfo().IsAssignableFrom( mappedTo.GetTypeInfo()))
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
-                    Constants.TypesAreNotAssignable, typeFrom, typeTo), nameof(typeFrom));
+                    Constants.TypesAreNotAssignable, registeredType, mappedTo), nameof(registeredType));
             }
 
             // Create registration and add to appropriate storage
             var container = (lifetimeManager is ISingletonLifetimePolicy) ? GetRootContainer() : this;
-            var registration = new TypeRegistration(typeFrom, typeTo, name, lifetimeManager);
+            var registration = new TypeRegistration(registeredType, name, mappedTo, lifetimeManager);
 
             // Add or replace existing 
             if (container.SetOrUpdate(registration) is IDisposable disposable)
@@ -79,7 +89,9 @@ namespace Unity
             {
                 foreach (var member in injectionMembers)
                 {
-                    member.AddPolicies(registration.RegisteredType, registration.MappedToType, 
+                    member.AddPolicies(registration.RegisteredType, 
+                                       registration.MappedToType ?? 
+                                       registration.RegisteredType, 
                                        registration.Name, context.Policies);
                 }
             }
@@ -87,8 +99,10 @@ namespace Unity
             // Register policies for each strategy
             var strategies = container._registerTypeStrategies;
             foreach (var strategy in strategies)
-                strategy.RegisterType(context, registration.RegisteredType, registration.MappedToType,
-                                      registration.Name, registration.LifetimeManager, injectionMembers);
+                strategy.RegisterType(context, registration.RegisteredType, 
+                                               registration.Name, 
+                                               registration.MappedToType,
+                                               registration.LifetimeManager, injectionMembers);
 
             // Raise event
             container.Registering?.Invoke(this, new RegisterEventArgs(registration.RegisteredType, 

@@ -45,23 +45,23 @@ namespace Unity.Strategies
 
         #region IRegisterTypeStrategy
 
-        public void RegisterType(IContainerContext context, Type typeFrom, Type typeTo, string name, 
+        public void RegisterType(IContainerContext context, Type registeredType, string name, Type mappedTo, 
                                  LifetimeManager lifetimeManager, params InjectionMember[] injectionMembers)
         {
             // Validate imput
-            if (typeFrom == null || typeFrom == typeTo) return;
+            if (mappedTo == null || registeredType == mappedTo) return;
 
             // Set mapping policy
-            var policy = typeFrom.GetTypeInfo().IsGenericTypeDefinition && typeTo.GetTypeInfo().IsGenericTypeDefinition
-                       ? new GenericTypeBuildKeyMappingPolicy(typeTo, name)
-                       : (IBuildKeyMappingPolicy)new BuildKeyMappingPolicy(typeTo, name);
-            context.Policies.Set(typeFrom, name, typeof(IBuildKeyMappingPolicy), policy);
+            var policy = registeredType.GetTypeInfo().IsGenericTypeDefinition && mappedTo.GetTypeInfo().IsGenericTypeDefinition
+                       ? new GenericTypeBuildKeyMappingPolicy(mappedTo, name)
+                       : (IBuildKeyMappingPolicy)new BuildKeyMappingPolicy(mappedTo, name);
+            context.Policies.Set(registeredType, name, typeof(IBuildKeyMappingPolicy), policy);
 
             // Require Re-Resolve if no injectors specified
             var members = null == injectionMembers ? new InjectionMember[0] : injectionMembers;
             var overrides = members.Where(m => m is InjectionConstructor || m is InjectionMethod || m is InjectionProperty).Any();
             if (lifetimeManager is IRequireBuildUpPolicy || overrides) return;
-            context.Policies.Set(typeFrom, name, typeof(IBuildPlanPolicy), new ResolveBuildUpPolicy());
+            context.Policies.Set(registeredType, name, typeof(IBuildPlanPolicy), new ResolveBuildUpPolicy());
         }
 
         #endregion

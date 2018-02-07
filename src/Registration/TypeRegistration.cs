@@ -9,10 +9,10 @@ namespace Unity.Registration
     {
         #region Constructors
 
-        public TypeRegistration(Type typeFrom, Type typeTo, string name, LifetimeManager lifetimeManager)
-            : base(typeFrom ?? typeTo, string.IsNullOrEmpty(name) ? null : name)
+        public TypeRegistration(Type registeredType, string name, Type mappedTo, LifetimeManager lifetimeManager)
+            : base(registeredType, string.IsNullOrEmpty(name) ? null : name)
         {
-            MappedToType = typeTo;
+            MappedToType = mappedTo ?? registeredType;
 
             // Make sure manager is not being used already
             if (lifetimeManager.InUse)
