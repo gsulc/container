@@ -300,7 +300,7 @@ namespace Unity
             _registeredNames.Clear();
 
             if (null == _parent)
-                InitializeStrategies();
+                InitializeRootContainer();
 
             return this;
         }

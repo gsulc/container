@@ -24,7 +24,13 @@ namespace Unity.ObjectBuilder.Strategies
         /// <param name="context">The context for the operation.</param>
         public override object PreBuildUp(IBuilderContext context)
         {
-            var policy = context.Policies.Get<IBuildKeyMappingPolicy>(context.BuildKey, out _);
+            IBuildKeyMappingPolicy policy = context.Policies.Get<IBuildKeyMappingPolicy>(context.OriginalBuildKey.Type,
+                                                                                         context.OriginalBuildKey.Name, out _)
+                                          ?? (context.OriginalBuildKey.Type.GetTypeInfo().IsGenericType
+                                          ? context.Policies.Get<IBuildKeyMappingPolicy>(context.OriginalBuildKey.Type.GetGenericTypeDefinition(),
+                                                                                         context.OriginalBuildKey.Name, out _)
+                                          : null);
+
             if (null == policy) return null;
 
             context.BuildKey = policy.Map(context.BuildKey, context);

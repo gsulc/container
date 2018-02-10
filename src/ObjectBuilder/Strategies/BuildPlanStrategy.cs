@@ -1,11 +1,8 @@
 ﻿using System;
+using System.Reflection;
 using Unity.Builder;
 using Unity.Builder.Strategy;
-using Unity.Lifetime;
-using Unity.ObjectBuilder.Policies;
 using Unity.Policy;
-using Unity.Registration;
-using Unity.Strategy;
 
 namespace Unity.ObjectBuilder.Strategies
 {
@@ -22,10 +19,10 @@ namespace Unity.ObjectBuilder.Strategies
         /// <param name="context">The context for the operation.</param>
         public override object PreBuildUp(IBuilderContext context)
         {
-            var plan = context.Policies.Get<IBuildPlanPolicy>(context.OriginalBuildKey, out var buildPlanLocation);
+            var plan = GetPolicy<IBuildPlanPolicy>(context.Policies, context.OriginalBuildKey, out var buildPlanLocation);
             if (plan == null || plan is OverriddenBuildPlanMarkerPolicy)
             {
-                var planCreator = context.Policies.Get<IBuildPlanCreatorPolicy>(context.BuildKey, out var creatorLocation);
+                var planCreator = GetPolicy<IBuildPlanCreatorPolicy>(context.Policies, context.BuildKey, out var creatorLocation);
                 if (planCreator != null)
                 {
                     plan = planCreator.CreatePlan(context, context.BuildKey);
@@ -36,5 +33,37 @@ namespace Unity.ObjectBuilder.Strategies
             plan?.BuildUp(context);
             return null;
         }
+
+        public static TPolicyInterface GetPolicy<TPolicyInterface>(IPolicyList list, INamedType buildKey, out IPolicyList containingPolicyList)
+        {
+            return (TPolicyInterface)(list.Get(buildKey.Type, buildKey.Name, typeof(TPolicyInterface), out containingPolicyList) ??
+                                      GetExtended(list, typeof(TPolicyInterface), buildKey, buildKey.Type, out containingPolicyList) ??
+                                      list.Get(null, null, typeof(TPolicyInterface), out containingPolicyList));    // Nothing! Get Default
+        }
+
+        private static IBuilderPolicy GetExtended(IPolicyList list, Type policyInterface, INamedType buildKey, Type buildType, out IPolicyList containingPolicyList)
+        {
+            containingPolicyList = null;
+            if (null == buildType) return null;
+
+            // Check if generic
+            if (buildType.GetTypeInfo().IsGenericType)
+            {
+                var newType = buildType.GetGenericTypeDefinition();
+                return list.Get(newType, buildKey.Name, policyInterface, out containingPolicyList) ??
+                       list.Get(newType, string.Empty, policyInterface, out containingPolicyList);
+            }
+
+            // Check if array
+            if (buildType.IsArray && buildType.GetArrayRank() == 1)
+            {
+                return list.Get(typeof(Array), buildKey.Name, policyInterface, out containingPolicyList) ??
+                       list.Get(typeof(Array), string.Empty, policyInterface, out containingPolicyList);
+            }
+
+            // Check default for type
+            return list.Get(buildType, string.Empty, policyInterface, out containingPolicyList);
+        }
+
     }
 }

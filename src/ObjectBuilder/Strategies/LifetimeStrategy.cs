@@ -69,7 +69,9 @@ namespace Unity.ObjectBuilder.Strategies
 
         private ILifetimePolicy GetLifetimePolicy(IBuilderContext context, out IPolicyList source)
         {
-            ILifetimePolicy policy = context.Policies.GetNoDefault<ILifetimePolicy>(context.OriginalBuildKey, false, out source);
+            ILifetimePolicy policy = (ILifetimePolicy)context.Policies.Get(context.OriginalBuildKey.Type, 
+                                                                           context.OriginalBuildKey.Name, 
+                                                                           typeof(ILifetimePolicy), out source);
             if (policy == null && context.OriginalBuildKey.Type.GetTypeInfo().IsGenericType)
             {
                 policy = GetLifetimePolicyForGenericType(context, out source);
@@ -86,25 +88,18 @@ namespace Unity.ObjectBuilder.Strategies
 
         private ILifetimePolicy GetLifetimePolicyForGenericType(IBuilderContext context, out IPolicyList factorySource)
         {
-            var typeToBuild = context.OriginalBuildKey.Type;
-            object openGenericBuildKey = new NamedTypeBuildKey(typeToBuild.GetGenericTypeDefinition(),
-                                                               context.OriginalBuildKey.Name);
-
             var factoryPolicy = context.Policies
-                                       .Get<ILifetimeFactoryPolicy>(openGenericBuildKey, out factorySource);
-
+                                       .Get<ILifetimeFactoryPolicy>(context.OriginalBuildKey.Type.GetGenericTypeDefinition(),
+                                                                    context.OriginalBuildKey.Name,
+                                                                    out factorySource);
             if (factoryPolicy != null)
             {
-                // creating the lifetime policy can result in arbitrary code execution
-                // in particular it will likely result in a Resolve call, which could result in locking
-                // to avoid deadlocks the new lifetime policy is created outside the lock
-                // multiple instances might be created, but only one instance will be used
                 ILifetimePolicy newLifetime = factoryPolicy.CreateLifetimePolicy();
 
                 lock (_genericLifetimeManagerLock)
                 {
                     // check whether the policy for closed-generic has been added since first checked
-                    var lifetime = factorySource.GetNoDefault<ILifetimePolicy>(context.BuildKey);
+                    var lifetime = factorySource.Get<ILifetimePolicy>(context.BuildKey.Type, context.BuildKey.Name);
                     if (lifetime == null)
                     {
                         factorySource.Set(newLifetime, context.BuildKey);

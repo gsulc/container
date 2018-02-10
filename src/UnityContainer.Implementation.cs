@@ -64,9 +64,8 @@ namespace Unity
             _registeredNames = new NamedTypesRegistry(_parent?._registeredNames);
             _lifetimeContainer = new LifetimeContainer { _strategies, _buildPlanStrategies };
             _policies = new PolicyList(_parent?._policies);
-            _policies.Set<IRegisteredNamesPolicy>(new RegisteredNamesPolicy(_registeredNames), null);
 
-            if (null == _parent) InitializeStrategies();
+            if (null == _parent) InitializeRootContainer();
 
             // Caches
             OnStrategiesChanged(this, null);
@@ -78,14 +77,14 @@ namespace Unity
 
         #region Default Strategies
 
-        protected void InitializeStrategies()
+        protected void InitializeRootContainer()
         {
             // Main strategy chain
-            _strategies.AddNew<BuildKeyMappingStrategy>(UnityBuildStage.TypeMapping);
-            _strategies.AddNew<LifetimeStrategy>(UnityBuildStage.Lifetime);
+            _strategies.Add(new BuildKeyMappingStrategy(), UnityBuildStage.TypeMapping);
+            _strategies.Add(new LifetimeStrategy(),        UnityBuildStage.Lifetime);
 
-            _strategies.AddNew<ArrayResolutionStrategy>(UnityBuildStage.Creation);
-            _strategies.AddNew<BuildPlanStrategy>(UnityBuildStage.Creation);
+            //_strategies.AddNew<ArrayResolutionStrategy>(UnityBuildStage.Creation);
+            _strategies.Add(new BuildPlanStrategy(),       UnityBuildStage.Creation);
 
             // Build plan strategy chain
             _buildPlanStrategies.AddNew<DynamicMethodConstructorStrategy>(BuilderStage.Creation);
@@ -100,7 +99,14 @@ namespace Unity
             _policies.Set<IBuildPlanPolicy>(new DeferredResolveBuildPlanPolicy(), typeof(Func<>));
             _policies.Set<ILifetimePolicy>(new PerResolveLifetimeManager(), typeof(Func<>));
             _policies.Set<IBuildPlanCreatorPolicy>(new LazyDynamicMethodBuildPlanCreatorPolicy(), typeof(Lazy<>));
-            _policies.Set<IBuildPlanCreatorPolicy>(new EnumerableDynamicMethodBuildPlanCreatorPolicy(), typeof(IEnumerable<>));
+            _policies.Set<IBuildPlanCreatorPolicy>(new DelegateBasedBuildPlanCreatorPolicy(
+                                                       typeof(UnityContainer).GetTypeInfo().GetDeclaredMethod(nameof(ResolveEnumerable)),
+                                                       context => context.BuildKey.Type.GetTypeInfo().GenericTypeArguments.First()), 
+                                                   typeof(IEnumerable<>));
+            _policies.Set<IBuildPlanCreatorPolicy>(new DelegateBasedBuildPlanCreatorPolicy(
+                                                       typeof(UnityContainer).GetTypeInfo().GetDeclaredMethod(nameof(ResolveArray)),
+                                                       context => context.OriginalBuildKey.Type.GetElementType()), 
+                                                   typeof(Array));
 
             RegisterInstance(typeof(IUnityContainer), null, this, new ContainerLifetimeManager());
         }
@@ -133,6 +139,56 @@ namespace Unity
         }
 
         #endregion
+
+
+
+        #region Resolving Enumerables
+
+        private static void ResolveArray<T>(IBuilderContext context)
+        {
+            if (null != context.Existing) return;
+
+            var container = (UnityContainer)context.Container;
+            var registeredNames = container._registeredNames
+                                           .GetKeys(typeof(T))
+                                           .Where(s => !string.IsNullOrEmpty(s))
+                                           .Distinct();
+
+            context.Existing = typeof(T).GetTypeInfo().IsGenericType 
+                             ? registeredNames.Concat(container._registeredNames
+                                                               .GetKeys(typeof(T)
+                                                               .GetGenericTypeDefinition()))
+                                              .Select(context.NewBuildUp<T>)
+                                              .ToArray() 
+                             : registeredNames.Select(context.NewBuildUp<T>)
+                                              .ToArray(); 
+            context.BuildComplete = true;
+            context.SetPerBuildSingleton();
+        }
+
+        private static void ResolveEnumerable<T>(IBuilderContext context)
+        {
+            if (null != context.Existing) return;
+
+            var container = (UnityContainer)context.Container;
+            var registeredNames = container._registeredNames
+                                           .GetKeys(typeof(T))
+                                           .Distinct();
+
+            context.Existing = typeof(T).GetTypeInfo().IsGenericType
+                             ? registeredNames.Concat(container._registeredNames
+                                                               .GetKeys(typeof(T)
+                                                               .GetGenericTypeDefinition()))
+                                              .Select(context.NewBuildUp<T>)
+                                              .ToArray()
+                             : registeredNames.Select(context.NewBuildUp<T>)
+                                              .ToArray();
+            context.BuildComplete = true;
+            context.SetPerBuildSingleton();
+        }
+
+        #endregion
+
 
 
         #region Implementation
@@ -258,17 +314,9 @@ namespace Unity
                 return context.Container;
             }
 
-            public override void SetValue(object newValue, IBuilderContext context = null)
-            {
-            }
-
-            public override void RemoveValue(IBuilderContext context = null)
-            {
-            }
-
             protected override LifetimeManager OnCreateLifetimeManager()
             {
-                return new ContainerLifetimeManager();
+                throw new NotImplementedException();
             }
         }
 
