@@ -154,7 +154,7 @@ namespace Unity
                     disposable.Dispose();
 
                 _extensions.Clear();
-                _registrations = new HashRegistry<Type, IRegistry<string, IPolicySet>>(1);
+                _policies = new HashRegistry<Type, IRegistry<string, IPolicySet>>(1);
             }
         }
 

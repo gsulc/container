@@ -97,7 +97,7 @@ namespace Unity
 
             public virtual void ClearAll()
             {
-                _container._registrations =
+                _container._policies =
                     new HashRegistry<Type, IRegistry<string, IPolicySet>>(ContainerInitialCapacity);
             }
 
